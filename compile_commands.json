@@ -1,0 +1,59 @@
+[
+  {
+    "file": "src/main.cpp",
+    "arguments": [
+      "g++",
+      "-Iinclude",
+      "-MMD",
+      "-MP",
+      "-Wall",
+      "-Werror",
+      "-std=c++23",
+      "-O2",
+      "-c",
+      "src/main.cpp",
+      "-o",
+      "obj/src/main.o"
+    ],
+    "directory": "/home/kr9sis/drive/Code/RU_FORC/P4_JRPG",
+    "output": "obj/src/main.o"
+  },
+  {
+    "file": "src/Classes.cpp",
+    "arguments": [
+      "g++",
+      "-Iinclude",
+      "-MMD",
+      "-MP",
+      "-Wall",
+      "-Werror",
+      "-std=c++23",
+      "-O2",
+      "-c",
+      "src/Classes.cpp",
+      "-o",
+      "obj/src/Classes.o"
+    ],
+    "directory": "/home/kr9sis/drive/Code/RU_FORC/P4_JRPG",
+    "output": "obj/src/Classes.o"
+  },
+  {
+    "file": "src/GameState.cpp",
+    "arguments": [
+      "g++",
+      "-Iinclude",
+      "-MMD",
+      "-MP",
+      "-Wall",
+      "-Werror",
+      "-std=c++23",
+      "-O2",
+      "-c",
+      "src/GameState.cpp",
+      "-o",
+      "obj/src/GameState.o"
+    ],
+    "directory": "/home/kr9sis/drive/Code/RU_FORC/P4_JRPG",
+    "output": "obj/src/GameState.o"
+  }
+]

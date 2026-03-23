@@ -8,18 +8,18 @@
       "-MP",
       "-Wall",
       "-Werror",
-      "-std=c++23",
+      "-Wpedantic",
       "-O2",
       "-c",
       "src/main.cpp",
       "-o",
       "obj/src/main.o"
     ],
-    "directory": "/home/kr9sis/drive/Code/RU_FORC/P4_JRPG",
+    "directory": "/home/kr9sis/drive/Code/RU_FORC/P5_twin_stick_shooter",
     "output": "obj/src/main.o"
   },
   {
-    "file": "src/Classes.cpp",
+    "file": "src/entity.cpp",
     "arguments": [
       "g++",
       "-Iinclude",
@@ -27,18 +27,18 @@
       "-MP",
       "-Wall",
       "-Werror",
-      "-std=c++23",
+      "-Wpedantic",
       "-O2",
       "-c",
-      "src/Classes.cpp",
+      "src/entity.cpp",
       "-o",
-      "obj/src/Classes.o"
+      "obj/src/entity.o"
     ],
-    "directory": "/home/kr9sis/drive/Code/RU_FORC/P4_JRPG",
-    "output": "obj/src/Classes.o"
+    "directory": "/home/kr9sis/drive/Code/RU_FORC/P5_twin_stick_shooter",
+    "output": "obj/src/entity.o"
   },
   {
-    "file": "src/GameState.cpp",
+    "file": "src/enemy.cpp",
     "arguments": [
       "g++",
       "-Iinclude",
@@ -46,14 +46,52 @@
       "-MP",
       "-Wall",
       "-Werror",
-      "-std=c++23",
+      "-Wpedantic",
       "-O2",
       "-c",
-      "src/GameState.cpp",
+      "src/enemy.cpp",
       "-o",
-      "obj/src/GameState.o"
+      "obj/src/enemy.o"
     ],
-    "directory": "/home/kr9sis/drive/Code/RU_FORC/P4_JRPG",
-    "output": "obj/src/GameState.o"
+    "directory": "/home/kr9sis/drive/Code/RU_FORC/P5_twin_stick_shooter",
+    "output": "obj/src/enemy.o"
+  },
+  {
+    "file": "src/player.cpp",
+    "arguments": [
+      "g++",
+      "-Iinclude",
+      "-MMD",
+      "-MP",
+      "-Wall",
+      "-Werror",
+      "-Wpedantic",
+      "-O2",
+      "-c",
+      "src/player.cpp",
+      "-o",
+      "obj/src/player.o"
+    ],
+    "directory": "/home/kr9sis/drive/Code/RU_FORC/P5_twin_stick_shooter",
+    "output": "obj/src/player.o"
+  },
+  {
+    "file": "src/mapstate.cpp",
+    "arguments": [
+      "g++",
+      "-Iinclude",
+      "-MMD",
+      "-MP",
+      "-Wall",
+      "-Werror",
+      "-Wpedantic",
+      "-O2",
+      "-c",
+      "src/mapstate.cpp",
+      "-o",
+      "obj/src/mapstate.o"
+    ],
+    "directory": "/home/kr9sis/drive/Code/RU_FORC/P5_twin_stick_shooter",
+    "output": "obj/src/mapstate.o"
   }
 ]

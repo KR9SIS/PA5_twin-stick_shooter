@@ -1,6 +1,6 @@
 # Compiler/config
 CXX := g++
-CXXFLAGS := -Wall -Werror -Wpedantic -std=c++23
+CXXFLAGS := -Wall -Werror -Wpedantic
 CPPFLAGS := -Iinclude -MMD -MP
 DEBUGFLAGS := -ggdb -fsanitize=address -fsanitize=undefined
 
@@ -21,7 +21,11 @@ GAME := $(BINDIR)/twinStickShooter
 
 # Source files
 GAME_SOURCES := \
-	$(SRCDIR)/main.cpp
+	$(SRCDIR)/main.cpp \
+	$(SRCDIR)/entity.cpp \
+	$(SRCDIR)/enemy.cpp \
+	$(SRCDIR)/player.cpp \
+	$(SRCDIR)/mapstate.cpp
 
 # Object files (mirror directory structure under obj/)
 GAME_OBJECTS := $(GAME_SOURCES:%.cpp=$(OBJDIR)/%.o)

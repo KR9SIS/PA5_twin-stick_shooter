@@ -21,7 +21,11 @@ GAME := $(BINDIR)/twinStickShooter
 
 # Source files
 GAME_SOURCES := \
-	$(SRCDIR)/main.cpp
+	$(SRCDIR)/main.cpp \
+	$(SRCDIR)/entity.cpp \
+	$(SRCDIR)/enemy.cpp \
+	$(SRCDIR)/player.cpp \
+	$(SRCDIR)/mapstate.cpp \
 
 # Object files (mirror directory structure under obj/)
 GAME_OBJECTS := $(GAME_SOURCES:%.cpp=$(OBJDIR)/%.o)

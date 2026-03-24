@@ -3,12 +3,13 @@
 #include <thread>
 
 int main() {
-    initscr(); // Starts ncurses.
-    cbreak();  // Disables line buffering, making input available immediately.
-    noecho();  // Prevents key presses from being printed to the screen.
-    keypad(stdscr, TRUE); // Enables reading of function keys (like arrow keys).
-    curs_set(0);          // Hides the cursor.
-    nodelay(stdscr, TRUE); // Makes getch() non-blocking for concurrency.
+    ::initscr(); // Starts ncurses.
+    ::cbreak();  // Disables line buffering, making input available immediately.
+    ::noecho();  // Prevents key presses from being printed to the screen.
+    ::keypad(::stdscr,
+             TRUE); // Enables reading of function keys (like arrow keys).
+    ::curs_set(0);  // Hides the cursor.
+    ::nodelay(::stdscr, TRUE); // Makes getch() non-blocking for concurrency.
 
     // Player coordinates.
     int p_y = 10;
@@ -23,11 +24,11 @@ int main() {
     bool is_running = true;
 
     while (is_running) {
-        clear(); // Clears the screen buffer.
+        ::clear(); // Clears the screen buffer.
         ::mvprintw(0, 0, "Use arrow keys to move. Press q to quit.");
         ::mvprintw(p_y, p_x, "@"); // Move cursor to (p_y, p_x) and print there.
         mvaddch(e_y, e_x, '#');
-        refresh(); // Actually pushes the drawing to the screen.
+        ::refresh(); // Actually pushes the drawing to the screen.
 
         int keyPressed = getch(); // Reads one key.
         switch (keyPressed) {
@@ -50,6 +51,7 @@ int main() {
             break;
         }
 
+        // Makes the enemy go forward in a loop until it reaches MAX_ENEMY_DIST.
         e_x = (e_x + 1) % MAX_ENEMY_DIST;
 
         // Concurrency, babyyyy!
@@ -57,6 +59,6 @@ int main() {
             std::chrono::milliseconds(REFRESH_INTERVAL_MS));
     }
 
-    endwin(); // Ends ncurses mode and restores the terminal.
+    ::endwin(); // Ends ncurses mode and restores the terminal.
     return 0;
 }

@@ -15,7 +15,7 @@
       "-o",
       "obj/src/main.o"
     ],
-    "directory": "/home/kr9sis/drive/Code/RU_FORC/P5_twin_stick_shooter",
+    "directory": "/home/ghrafn/my_cpp_code/PA5_twin-stick_shooter",
     "output": "obj/src/main.o"
   },
   {
@@ -34,7 +34,7 @@
       "-o",
       "obj/src/entity.o"
     ],
-    "directory": "/home/kr9sis/drive/Code/RU_FORC/P5_twin_stick_shooter",
+    "directory": "/home/ghrafn/my_cpp_code/PA5_twin-stick_shooter",
     "output": "obj/src/entity.o"
   },
   {
@@ -53,7 +53,7 @@
       "-o",
       "obj/src/enemy.o"
     ],
-    "directory": "/home/kr9sis/drive/Code/RU_FORC/P5_twin_stick_shooter",
+    "directory": "/home/ghrafn/my_cpp_code/PA5_twin-stick_shooter",
     "output": "obj/src/enemy.o"
   },
   {
@@ -72,7 +72,7 @@
       "-o",
       "obj/src/player.o"
     ],
-    "directory": "/home/kr9sis/drive/Code/RU_FORC/P5_twin_stick_shooter",
+    "directory": "/home/ghrafn/my_cpp_code/PA5_twin-stick_shooter",
     "output": "obj/src/player.o"
   },
   {
@@ -91,7 +91,7 @@
       "-o",
       "obj/src/mapstate.o"
     ],
-    "directory": "/home/kr9sis/drive/Code/RU_FORC/P5_twin_stick_shooter",
+    "directory": "/home/ghrafn/my_cpp_code/PA5_twin-stick_shooter",
     "output": "obj/src/mapstate.o"
   }
 ]

@@ -2,6 +2,7 @@
 CXX := g++
 CXXFLAGS := -Wall -Werror -Wpedantic
 CPPFLAGS := -Iinclude -MMD -MP
+LDLIBS := -lncurses
 DEBUGFLAGS := -ggdb -fsanitize=address -fsanitize=undefined
 
 ifdef DEBUG
@@ -38,7 +39,7 @@ DEPS := $(GAME_OBJECTS:.o=.d)
 all: $(GAME)
 
 $(GAME): $(GAME_OBJECTS) | $(BINDIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
 # Compile (ensure obj subdirs exist)
 $(OBJDIR)/src/%.o: $(SRCDIR)/%.cpp

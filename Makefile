@@ -1,6 +1,6 @@
 # Compiler/config
 CXX := g++
-CXXFLAGS := -Wall -Werror -Wpedantic
+CXXFLAGS := -Wall -Werror -Wpedantic -std=c++20
 CPPFLAGS := -Iinclude -MMD -MP
 LDLIBS := -lncurses
 DEBUGFLAGS := -ggdb -fsanitize=address -fsanitize=undefined

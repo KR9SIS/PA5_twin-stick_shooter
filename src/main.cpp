@@ -2,7 +2,11 @@
 #include <ncurses.h>
 #include <thread>
 
+enum MyColorPairs { PLAYER_PAIR = 1, ENEMY_PAIR = 2 };
+
 int main() {
+    using enum MyColorPairs;
+
     ::initscr(); // Starts ncurses.
     ::cbreak();  // Disables line buffering, making input available immediately.
     ::noecho();  // Prevents key presses from being printed to the screen.
@@ -24,14 +28,23 @@ int main() {
     bool is_running = true;
 
     while (is_running) {
+        ::start_color();
+        ::init_pair(PLAYER_PAIR, COLOR_CYAN, COLOR_BLACK);
+        ::init_pair(ENEMY_PAIR, COLOR_RED, COLOR_BLACK);
         ::clear(); // Clears the screen buffer.
-        ::mvprintw(0, 0, "Use arrow keys to move. Press q to quit.");
+        ::mvprintw(0, 0, "Use w,a,s,d to move. Press q to quit.");
+
+        attron(COLOR_PAIR(PLAYER_PAIR));
         ::mvprintw(p_y, p_x, "@"); // Move cursor to (p_y, p_x) and print there.
-        mvaddch(e_y, e_x, '#');
+        attroff(COLOR_PAIR(PLAYER_PAIR));
+
+        attron(COLOR_PAIR(ENEMY_PAIR));
+        ::mvprintw(e_y, e_x, "#"); // Move cursor to (e_y, e_x) and print there.
+        attroff(COLOR_PAIR(ENEMY_PAIR));
+
         ::refresh(); // Actually pushes the drawing to the screen.
 
-        int keyPressed = getch(); // Reads one key.
-        switch (keyPressed) {
+        switch (int keyPressed = getch(); keyPressed) {
         case 'w':
             --p_y;
             break;

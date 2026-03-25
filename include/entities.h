@@ -9,9 +9,9 @@ enum class Action { Attack, Move };
 
 class Entity {
   public:
-    const int8_t max_hp;
-    const int8_t damage;
-    const int8_t move_speed;
+    const uint8_t max_hp;
+    const uint8_t damage;
+    const uint8_t move_speed;
     int8_t cur_hp;
     std::pair<uint8_t, uint8_t> cur_pos;
 
@@ -27,7 +27,7 @@ class Entity {
     virtual int8_t take_damage(int8_t dmg) = 0;
     virtual void update() = 0;
 
-    Entity(int8_t max_health, int8_t dmg, int8_t move_speed, uint8_t start_x,
+    Entity(uint8_t max_health, uint8_t dmg, uint8_t move_speed, uint8_t start_x,
            uint8_t start_y)
         : max_hp(max_health), damage(dmg), move_speed(move_speed),
           cur_hp(max_hp), cur_pos(start_y, start_x) {};

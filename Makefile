@@ -1,7 +1,8 @@
 # Compiler/config
 CXX := g++
-CXXFLAGS := -Wall -Werror -Wpedantic
+CXXFLAGS := -Wall -Werror -Wpedantic -std=c++20
 CPPFLAGS := -Iinclude -MMD -MP
+LDLIBS := -lncurses
 DEBUGFLAGS := -ggdb -fsanitize=address -fsanitize=undefined
 
 ifdef DEBUG
@@ -22,6 +23,7 @@ GAME := $(BINDIR)/twinStickShooter
 # Source files
 GAME_SOURCES := \
 	$(SRCDIR)/main.cpp \
+	$(SRCDIR)/ncurses_screen.cpp \
 	$(SRCDIR)/entity.cpp \
 	$(SRCDIR)/enemy.cpp \
 	$(SRCDIR)/player.cpp \
@@ -38,7 +40,7 @@ DEPS := $(GAME_OBJECTS:.o=.d)
 all: $(GAME)
 
 $(GAME): $(GAME_OBJECTS) | $(BINDIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
 # Compile (ensure obj subdirs exist)
 $(OBJDIR)/src/%.o: $(SRCDIR)/%.cpp

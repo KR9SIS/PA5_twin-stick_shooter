@@ -7,9 +7,11 @@
 #include <utility>
 
 MapState::MapState(size_t r, size_t c, uint8_t difficulty)
-    : ROWS(r), COLUMNS(c), DIFFICULTY(difficulty),
-      map(r, std::vector<std::unique_ptr<Entity>>(c)) {
-    game_running = true;
+    : ROWS(r), COLUMNS(c), DIFFICULTY(difficulty), game_running(true) {
+    map.resize(r);
+    for (auto& row : map) {
+        row.resize(c);
+    }
 }
 
 void MapState::run_level() {

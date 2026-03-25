@@ -1,4 +1,4 @@
-#include "ncurses_screen.hpp"
+#include "ncurses_screen.h"
 
 #include <chrono>
 #include <ncurses.h>

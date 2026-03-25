@@ -1,4 +1,4 @@
-#include "ncurses_screen.hpp"
+#include "ncurses_screen.h"
 
 namespace {
 void run_game_loop(NcursesScreen const& screen) {

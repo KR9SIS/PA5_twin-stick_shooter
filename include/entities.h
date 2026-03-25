@@ -24,10 +24,6 @@ class Entity {
     void change_health(int8_t dmg);
 
   protected:
-    void move(Direction d);
-
-    virtual void update() = 0;
-
     Entity(uint8_t max_health, uint8_t dmg, uint8_t move_speed, uint8_t start_x,
            uint8_t start_y)
         : max_hp(max_health), damage(dmg), move_speed(move_speed),

@@ -4,34 +4,34 @@
 void melee_attack();
 void ranged_attack();
 
+enum class Direction { UP, DOWN, LEFT, RIGHT };
+enum class Action { Attack, Move };
+
+using position = std::pair<int8_t, int8_t>;
+
 class Entity {
   public:
-    const int8_t max_hp;
-    const int8_t damage;
-    const int8_t move_speed;
+    const uint8_t max_hp;
+    const uint8_t damage;
+    const uint8_t move_speed;
     int8_t cur_hp;
-    std::pair<int8_t, int8_t> cur_pos;
+    position cur_pos;
 
     virtual ~Entity() = default;
 
+    position get_pos();
+    void set_pos(position new_pos);
+    void change_health(int8_t dmg);
+
   protected:
-    void move();
-
-    virtual void attack() = 0;
-    virtual int8_t take_damage(int8_t dmg) = 0;
-    virtual void update() = 0;
-
-    Entity(int8_t max_health, int8_t dmg, int8_t move_speed, int8_t start_x,
-           int8_t start_y)
+    Entity(uint8_t max_health, uint8_t dmg, uint8_t move_speed, uint8_t start_x,
+           uint8_t start_y)
         : max_hp(max_health), damage(dmg), move_speed(move_speed),
-          cur_hp(max_hp), cur_pos(start_x, start_y) {};
+          cur_hp(max_hp), cur_pos(start_y, start_x) {};
 };
 
-enum class Action { W, A, S, D, UP, DOWN, LEFT, RIGHT };
-
-class Player : Entity {
+class Player : public Entity {
   public:
-    void act(Action a);
     void attack();
     int8_t take_damage(int8_t dmg);
     void update();
@@ -39,9 +39,9 @@ class Player : Entity {
     Player();
 };
 
-class Enemy : Entity {
+class Enemy : public Entity {
   public:
-    void act();
+    std::pair<Action, position> act(position player_pos);
 };
 
 class Giant : Enemy {

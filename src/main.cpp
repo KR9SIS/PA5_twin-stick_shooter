@@ -2,11 +2,9 @@
 #include <ncurses.h>
 #include <thread>
 
-enum MyColorPairs { PLAYER_PAIR = 1, ENEMY_PAIR = 2 };
+enum ClrPrs { PLAYER_PAIR = 1, ENEMY_PAIR = 2 };
 
 int main() {
-    using enum MyColorPairs;
-
     ::initscr(); // Starts ncurses.
     ::cbreak();  // Disables line buffering, making input available immediately.
     ::noecho();  // Prevents key presses from being printed to the screen.
@@ -29,20 +27,20 @@ int main() {
 
     while (is_running) {
         ::start_color();
-        ::init_pair(PLAYER_PAIR, COLOR_CYAN, COLOR_BLACK);
-        ::init_pair(ENEMY_PAIR, COLOR_RED, COLOR_BLACK);
+        ::init_pair(ClrPrs::PLAYER_PAIR, COLOR_CYAN, COLOR_BLACK);
+        ::init_pair(ClrPrs::ENEMY_PAIR, COLOR_RED, COLOR_BLACK);
         ::clear(); // Clears the screen buffer.
         ::mvprintw(0, 0, "Use w,a,s,d to move. Press q to quit.");
 
-        attron(COLOR_PAIR(PLAYER_PAIR));
+        attron(COLOR_PAIR(ClrPrs::PLAYER_PAIR));
         ::mvprintw(player_y, player_x,
                    "@"); // Move cursor to (player_y, player_x) and print there.
-        attroff(COLOR_PAIR(PLAYER_PAIR));
+        attroff(COLOR_PAIR(ClrPrs::PLAYER_PAIR));
 
-        attron(COLOR_PAIR(ENEMY_PAIR));
+        attron(COLOR_PAIR(ClrPrs::ENEMY_PAIR));
         ::mvprintw(enemy_y, enemy_x,
                    "#"); // Move cursor to (enemy_y, enemy_x) and print there.
-        attroff(COLOR_PAIR(ENEMY_PAIR));
+        attroff(COLOR_PAIR(ClrPrs::ENEMY_PAIR));
 
         ::refresh(); // Actually pushes the drawing to the screen.
 
@@ -69,6 +67,8 @@ int main() {
         // Makes the enemy go forward in a loop until it reaches MAX_ENEMY_DIST.
         enemy_x = (enemy_x + 1) % MAX_ENEMY_DIST;
 
+        // Make this thread sleep for REFRESH_INTERVAL_MS between each loop
+        // iteration. This basically lets us set the time between ticks.
         std::this_thread::sleep_for(
             std::chrono::milliseconds(REFRESH_INTERVAL_MS));
     }

@@ -17,7 +17,7 @@ class MapState {
 
     void run_level();
     void get_input();
-    std::pair<uint8_t, uint8_t> move_entity(std::pair<uint8_t, uint8_t> pos);
+    void move_enemy(position goal_pos, Enemy& enemy);
 
-    void attack_pos(std::pair<uint8_t, uint8_t> pos, uint8_t radius = 1);
+    void attack_pos(position pos, uint8_t radius = 1);
 };

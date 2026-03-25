@@ -7,18 +7,20 @@ void ranged_attack();
 enum class Direction { UP, DOWN, LEFT, RIGHT };
 enum class Action { Attack, Move };
 
+using position = std::pair<int8_t, int8_t>;
+
 class Entity {
   public:
     const uint8_t max_hp;
     const uint8_t damage;
     const uint8_t move_speed;
     int8_t cur_hp;
-    std::pair<uint8_t, uint8_t> cur_pos;
+    position cur_pos;
 
     virtual ~Entity() = default;
 
-    std::pair<uint8_t, uint8_t> get_pos();
-    void set_pos(std::pair<uint8_t, uint8_t> new_pos);
+    position get_pos();
+    void set_pos(position new_pos);
 
   protected:
     void move(Direction d);
@@ -44,8 +46,7 @@ class Player : public Entity {
 
 class Enemy : public Entity {
   public:
-    std::pair<Action, std::pair<uint8_t, uint8_t>>
-    act(std::pair<uint8_t, uint8_t> player_pos);
+    std::pair<Action, position> act(position player_pos);
 };
 
 class Giant : Enemy {

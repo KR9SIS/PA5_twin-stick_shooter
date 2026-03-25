@@ -17,6 +17,9 @@ class Entity {
 
     virtual ~Entity() = default;
 
+    std::pair<uint8_t, uint8_t> get_pos();
+    void set_pos(std::pair<uint8_t, uint8_t> new_pos);
+
   protected:
     void move(Direction d);
 
@@ -24,13 +27,13 @@ class Entity {
     virtual int8_t take_damage(int8_t dmg) = 0;
     virtual void update() = 0;
 
-    Entity(int8_t max_health, int8_t dmg, int8_t move_speed, int8_t start_x,
-           int8_t start_y)
+    Entity(int8_t max_health, int8_t dmg, int8_t move_speed, uint8_t start_x,
+           uint8_t start_y)
         : max_hp(max_health), damage(dmg), move_speed(move_speed),
-          cur_hp(max_hp), cur_pos(start_x, start_y) {};
+          cur_hp(max_hp), cur_pos(start_y, start_x) {};
 };
 
-class Player : Entity {
+class Player : public Entity {
   public:
     void attack();
     int8_t take_damage(int8_t dmg);
@@ -39,9 +42,10 @@ class Player : Entity {
     Player();
 };
 
-class Enemy : Entity {
+class Enemy : public Entity {
   public:
-    void act();
+    std::pair<Action, std::pair<uint8_t, uint8_t>>
+    act(std::pair<uint8_t, uint8_t> player_pos);
 };
 
 class Giant : Enemy {

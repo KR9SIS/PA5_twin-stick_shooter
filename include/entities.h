@@ -4,18 +4,21 @@
 void melee_attack();
 void ranged_attack();
 
+enum class Direction { UP, DOWN, LEFT, RIGHT };
+enum class Action { Attack, Move };
+
 class Entity {
   public:
     const int8_t max_hp;
     const int8_t damage;
     const int8_t move_speed;
     int8_t cur_hp;
-    std::pair<int8_t, int8_t> cur_pos;
+    std::pair<uint8_t, uint8_t> cur_pos;
 
     virtual ~Entity() = default;
 
   protected:
-    void move();
+    void move(Direction d);
 
     virtual void attack() = 0;
     virtual int8_t take_damage(int8_t dmg) = 0;
@@ -27,11 +30,8 @@ class Entity {
           cur_hp(max_hp), cur_pos(start_x, start_y) {};
 };
 
-enum class Action { W, A, S, D, UP, DOWN, LEFT, RIGHT };
-
 class Player : Entity {
   public:
-    void act(Action a);
     void attack();
     int8_t take_damage(int8_t dmg);
     void update();

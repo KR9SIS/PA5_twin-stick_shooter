@@ -10,7 +10,7 @@ MapState::MapState(size_t r, size_t c)
 }
 
 void MapState::run_level(int difficulty) {
-    // while (game is running) { for (auto &e : enemies) e.act(); /* sleep */ }
+    std::shared_ptr<MapState> map_p = std::make_shared<MapState>();
     while (game_running) {
         for (auto& enemy : enemies) {
             enemy.act();

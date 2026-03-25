@@ -21,12 +21,11 @@ class Entity {
 
     position get_pos();
     void set_pos(position new_pos);
+    void change_health(int8_t dmg);
 
   protected:
     void move(Direction d);
 
-    virtual void attack() = 0;
-    virtual int8_t take_damage(int8_t dmg) = 0;
     virtual void update() = 0;
 
     Entity(uint8_t max_health, uint8_t dmg, uint8_t move_speed, uint8_t start_x,

@@ -19,7 +19,7 @@ class MapState {
     void get_input();
     void move_enemy(position goal_pos, Enemy& enemy);
 
-    void attack_pos(position pos, uint8_t radius = 1);
+    void attack_pos(position pos, uint8_t dmg, uint8_t radius = 1);
 
     bool occupied(position pos);
 };

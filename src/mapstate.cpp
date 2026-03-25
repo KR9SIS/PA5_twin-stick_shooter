@@ -21,7 +21,7 @@ void MapState::run_level() {
                 move_enemy(action.second, enemy);
                 break;
             case Action::Attack:
-                attack_pos(action.second);
+                attack_pos(action.second, enemy.damage);
                 break;
             }
         }
@@ -67,4 +67,16 @@ void MapState::move_enemy(position goal_pos, Enemy& enemy) {
             move(dir.second);
         }
     }
+}
+
+void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
+    if (radius != 1) {
+        return; // TODO: Add radius calculations
+    }
+
+    auto& entity = map[pos.first][pos.second];
+    if (entity == nullptr) {
+        return;
+    }
+    entity->change_health(-dmg);
 }

@@ -23,6 +23,7 @@ GAME := $(BINDIR)/twinStickShooter
 # Source files
 GAME_SOURCES := \
 	$(SRCDIR)/main.cpp \
+	$(SRCDIR)/ncurses_screen.cpp \
 	$(SRCDIR)/entity.cpp \
 	$(SRCDIR)/enemy.cpp \
 	$(SRCDIR)/player.cpp \

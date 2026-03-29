@@ -1,6 +1,8 @@
 #include <cstdint>
 #include <utility>
 
+#pragma once
+
 void melee_attack();
 void ranged_attack();
 
@@ -11,9 +13,10 @@ using position = std::pair<int8_t, int8_t>;
 
 class Entity {
   public:
-    const uint8_t max_hp;
-    const uint8_t damage;
-    const uint8_t move_speed;
+    const uint8_t MAX_HP;
+    const uint8_t DAMAGE;
+    const uint8_t MOVE_SPEED;
+    const char ICON;
     int8_t cur_hp;
     position cur_pos;
 
@@ -24,10 +27,10 @@ class Entity {
     void change_health(int8_t dmg);
 
   protected:
-    Entity(uint8_t max_health, uint8_t dmg, uint8_t move_speed, uint8_t start_x,
-           uint8_t start_y)
-        : max_hp(max_health), damage(dmg), move_speed(move_speed),
-          cur_hp(max_hp), cur_pos(start_y, start_x) {};
+    Entity(uint8_t max_health, uint8_t dmg, uint8_t move_speed, const char icon,
+           uint8_t start_x, uint8_t start_y)
+        : MAX_HP(max_health), DAMAGE(dmg), MOVE_SPEED(move_speed), ICON(icon),
+          cur_hp(MAX_HP), cur_pos(start_y, start_x) {};
 };
 
 class Player : public Entity {
@@ -42,23 +45,25 @@ class Player : public Entity {
 class Enemy : public Entity {
   public:
     std::pair<Action, position> act(position player_pos);
+    using Entity::Entity;
 };
 
-class Giant : Enemy {
+class Giant : public Enemy {
   public:
     void attack() {
         void melee_attack();
     }
 };
 
-class Goblin : Enemy {
+class Goblin : public Enemy {
   public:
     void attack() {
         void melee_attack();
     }
+    Goblin() : Enemy(5, 1, 1, 'g', 0, 0) {}
 };
 
-class Wizard : Enemy {
+class Wizard : public Enemy {
   public:
     void attack() {
         void ranged_attack();

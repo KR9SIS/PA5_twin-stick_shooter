@@ -1,8 +1,11 @@
 #include "ncurses_screen.h"
 
 #include <chrono>
+#include <cstdint>
+#include <memory>
 #include <ncurses.h>
 #include <thread>
+#include <vector>
 
 namespace {
 enum ClrPr { PLAYER_PAIR = 1, ENEMY_PAIR = 2 };
@@ -26,23 +29,25 @@ NcursesScreen::~NcursesScreen() {
     ::endwin();
 }
 
-void NcursesScreen::render_frame(int player_y, int player_x, int enemy_y,
-                                 int enemy_x) const {
+void NcursesScreen::render_frame(
+    const Player& player, std::vector<std::unique_ptr<Enemy>>& enemies) const {
     ::clear();
     ::mvprintw(0, 0, "Use w,a,s,d to move. Press q to quit.");
 
     ::attron(COLOR_PAIR(ClrPr::PLAYER_PAIR));
-    ::mvprintw(player_y, player_x, "@");
+    ::mvprintw(player.cur_pos.first, player.cur_pos.second, "@");
     ::attroff(COLOR_PAIR(ClrPr::PLAYER_PAIR));
 
     ::attron(COLOR_PAIR(ClrPr::ENEMY_PAIR));
-    ::mvprintw(enemy_y, enemy_x, "#");
+    for (const std::unique_ptr<Enemy>& e : enemies) {
+        ::mvprintw(e->cur_pos.first, e->cur_pos.second, "%c", e->ICON);
+    }
     ::attroff(COLOR_PAIR(ClrPr::ENEMY_PAIR));
 
     ::refresh();
 }
 
-void NcursesScreen::handle_input(int& player_y, int& player_x,
+void NcursesScreen::handle_input(int8_t& player_y, int8_t& player_x,
                                  bool& is_running) const {
     switch (int key_pressed = ::getch(); key_pressed) {
     case 'w':

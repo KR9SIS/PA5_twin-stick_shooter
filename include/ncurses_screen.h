@@ -1,3 +1,7 @@
+#include "entities.h"
+#include <cstdint>
+#include <memory>
+#include <vector>
 #pragma once
 
 class NcursesScreen final {
@@ -8,9 +12,10 @@ class NcursesScreen final {
     NcursesScreen(const NcursesScreen&) = delete;
     NcursesScreen& operator=(const NcursesScreen&) = delete;
 
-    void render_frame(int player_y, int player_x, int enemy_y,
-                      int enemy_x) const;
-    void handle_input(int& player_y, int& player_x, bool& is_running) const;
+    void render_frame(const Player& player,
+                      std::vector<std::unique_ptr<Enemy>>& enemies) const;
+    void handle_input(int8_t& player_y, int8_t& player_x,
+                      bool& is_running) const;
     void sleep_until_next_frame() const;
 
   private:

@@ -22,6 +22,7 @@ class MapState {
     void run_level();
     void get_input();
     void move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy);
+    void move_player(position goal_pos);
 
     void attack_pos(position pos, uint8_t dmg, uint8_t radius = 1);
 

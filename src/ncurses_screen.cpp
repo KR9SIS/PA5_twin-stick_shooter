@@ -48,26 +48,25 @@ void NcursesScreen::render_frame(
     ::refresh();
 }
 
-void NcursesScreen::handle_input(int8_t& player_y, int8_t& player_x,
-                                 bool& is_running) const {
+position NcursesScreen::handle_input(position cur_pos, bool& is_running) const {
     switch (int key_pressed = ::getch(); key_pressed) {
     case 'w':
-        --player_y;
-        break;
+        cur_pos.first--;
+        return cur_pos;
     case 's':
-        ++player_y;
-        break;
+        cur_pos.first++;
+        return cur_pos;
     case 'a':
-        --player_x;
-        break;
+        cur_pos.second--;
+        return cur_pos;
     case 'd':
-        ++player_x;
-        break;
+        cur_pos.second++;
+        return cur_pos;
     case 'q':
         is_running = false;
-        break;
+        return cur_pos;
     default:
-        break;
+        return cur_pos;
     }
 }
 

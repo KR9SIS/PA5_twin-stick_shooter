@@ -109,8 +109,20 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
 }
 
 void MapState::handle_input() {
+void MapState::move_player(position goal_pos) {
+    if (occupied(goal_pos)) {
+        return;
+    }
+    std::swap(map[player->cur_pos.first][player->cur_pos.second],
+              map[goal_pos.first][goal_pos.second]);
+
+    player->set_pos(goal_pos);
+}
+
     while (game_running) {
         SCREEN.handle_input(player.cur_pos.first, player.cur_pos.second,
                             game_running);
+        auto new_pos = SCREEN.handle_input(player->get_pos(), game_running);
+        move_player(new_pos);
     }
 }

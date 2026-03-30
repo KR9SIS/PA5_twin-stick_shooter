@@ -45,7 +45,15 @@ void MapState::run_level() {
             // gets the most up-do-date info.
             {
                 std::scoped_lock lock(state_mutex);
-                action = enemy->act(player->get_pos());
+                // handling if this enemy is a Projectile
+                if (auto* proj = dynamic_cast<Projectile*>(enemy.get())) {
+                    position goal = enemy->cur_pos;
+                    goal.first  += proj->delta.first  * enemy->MOVE_SPEED;
+                    goal.second += proj->delta.second * enemy->MOVE_SPEED;
+                    action = {Action::Move, goal};
+                } else {
+                    action = enemy->act(player->get_pos());
+                }
             }
             switch (action.first) {
             case Action::Move:

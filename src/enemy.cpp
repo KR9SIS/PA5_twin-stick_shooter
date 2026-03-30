@@ -12,3 +12,13 @@ std::pair<Action, position> Enemy::act(position player_pos) {
     }
     return std::make_pair(Action::Move, player_pos);
 }
+
+// Projectiles move straight in their delta direction
+std::pair<Action, position> Projectile::act(position /*player_pos*/) {
+    position goal = cur_pos;
+
+    goal.first += delta.first * MOVE_SPEED;
+    goal.second += delta.second * MOVE_SPEED;
+
+    return std::make_pair(Action::Move, goal);
+}

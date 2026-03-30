@@ -46,8 +46,22 @@ class Player : public Entity {
 
 class Enemy : public Entity {
   public:
-    std::pair<Action, position> act(position player_pos);
+    virtual std::pair<Action, position> act(position player_pos);
     using Entity::Entity;
+};
+
+class Projectile : public Enemy {
+  public:
+    // (-1,0) up, (1,0) down, (0,-1) left, (0,1) right.
+    position delta;
+
+    Projectile(position start, position d, uint8_t dmg)
+        : Enemy(/*hp*/ 1, dmg, /*move speed*/ 10, '*', start.first,
+                start.second),
+          delta(d) {}
+
+    // Projectiles ignore the player's position
+    std::pair<Action, position> act(position player_pos) override;
 };
 
 class Giant : public Enemy {

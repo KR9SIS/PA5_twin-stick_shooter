@@ -80,5 +80,5 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
     if (entity == nullptr) {
         return;
     }
-    entity->change_health(-dmg);
+    entity->take_damage(dmg);
 }

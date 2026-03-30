@@ -133,7 +133,12 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
     if (entity == nullptr) {
         return;
     }
-    entity->take_damage(dmg);
+    auto remaining_hp = entity->take_damage(dmg);
+
+    //end game if player is dead
+    if (entity.get() == player.get() && remaining_hp <= 0) {
+        game_running = false;
+    }
 }
 
 void MapState::move_player(position goal_pos) {

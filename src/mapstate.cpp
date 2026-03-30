@@ -18,7 +18,8 @@ MapState::MapState(size_t r, size_t c, uint8_t difficulty,
         row.resize(c);
     }
     player = std::make_shared<Player>(r / 2, c / 2);
-    map[player->cur_pos.first][player->cur_pos.second] = player;
+    map[player->get_pos(state_mutex).first]
+       [player->get_pos(state_mutex).second] = player;
 
     for (int i = 0; i < difficulty * 5; i++) {
         enemies.push_back(std::make_shared<Goblin>(i, i));
@@ -43,7 +44,7 @@ void MapState::run_level() {
             std::pair<Action, position> action;
             // Make the enemy act. We acquire the lock so that the enemy always
             // gets the most up-do-date info.
-            action = enemy->act(player->get_pos());
+            action = enemy->act(player->get_pos(state_mutex));
             switch (action.first) {
             case Action::Move:
                 move_enemy(action.second, enemy);
@@ -74,7 +75,7 @@ void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
         // if it is continue
         // else swap cur_pos and new_pos
 
-        auto cur_pos = enemy->get_pos();
+        auto cur_pos = enemy->get_pos(state_mutex);
         position new_pos = cur_pos;
 
         if (is_row) {
@@ -83,10 +84,10 @@ void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
             new_pos.second += (dir > 0) ? 1 : -1;
         }
         if (move_pos(cur_pos, new_pos)) {
-            enemy->set_pos(new_pos);
+            enemy->set_pos(state_mutex, new_pos);
         }
     };
-    auto cur_pos = enemy->get_pos();
+    auto cur_pos = enemy->get_pos(state_mutex);
     for (uint8_t mov = 0; mov < enemy->MOVE_SPEED; mov++) {
         auto dir = std::make_pair(goal_pos.first - cur_pos.first,
                                   goal_pos.second - cur_pos.second);
@@ -125,8 +126,8 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
 }
 
 void MapState::move_player(position goal_pos) {
-    if (move_pos(player->get_pos(), goal_pos)) {
-        player->set_pos(goal_pos);
+    if (move_pos(player->get_pos(state_mutex), goal_pos)) {
+        player->set_pos(state_mutex, goal_pos);
     }
 }
 
@@ -146,7 +147,7 @@ void MapState::ncurses_thread() {
         // Try to acquire the lock on the state. If we can't, just skip this
         // frame. This is so that we don't block the main thread if the player
         // is in the middle of moving or attacking.
-        cur_pos = player->get_pos();
+        cur_pos = player->get_pos(state_mutex);
 
         // Handle input and get new position. If the player wants to quit,
         // then break.

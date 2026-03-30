@@ -1,7 +1,6 @@
 #include "ncurses_screen.h"
 
 #include <chrono>
-#include <cstdint>
 #include <memory>
 #include <ncurses.h>
 #include <thread>
@@ -30,16 +29,18 @@ NcursesScreen::~NcursesScreen() {
 }
 
 void NcursesScreen::render_frame(
-    const Player& player, std::vector<std::unique_ptr<Enemy>>& enemies) const {
+    const std::shared_ptr<Player>& player,
+    std::vector<std::shared_ptr<Enemy>>& enemies) const {
     ::clear();
     ::mvprintw(0, 0, "Use w,a,s,d to move. Press q to quit.");
 
     ::attron(COLOR_PAIR(ClrPr::PLAYER_PAIR));
-    ::mvprintw(player.cur_pos.first, player.cur_pos.second, "@");
+    ::mvprintw(player->cur_pos.first, player->cur_pos.second, "%c",
+               player->ICON);
     ::attroff(COLOR_PAIR(ClrPr::PLAYER_PAIR));
 
     ::attron(COLOR_PAIR(ClrPr::ENEMY_PAIR));
-    for (const std::unique_ptr<Enemy>& e : enemies) {
+    for (const std::shared_ptr<Enemy>& e : enemies) {
         ::mvprintw(e->cur_pos.first, e->cur_pos.second, "%c", e->ICON);
     }
     ::attroff(COLOR_PAIR(ClrPr::ENEMY_PAIR));

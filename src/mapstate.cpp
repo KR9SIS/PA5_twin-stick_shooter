@@ -15,11 +15,12 @@ MapState::MapState(size_t r, size_t c, uint8_t difficulty,
     for (auto& row : map) {
         row.resize(c);
     }
-    player.cur_pos.first = r / 2;
-    player.cur_pos.second = c / 2;
+    player = std::make_shared<Player>(r / 2, c / 2);
+    map[player->cur_pos.first][player->cur_pos.second] = player;
 
     for (int i = 0; i < difficulty * 5; i++) {
-        enemies.push_back(std::make_unique<Goblin>());
+        enemies.push_back(std::make_shared<Goblin>(i, i));
+        map[i][i] = enemies.back();
     }
 
     std::thread input_thread(&MapState::handle_input, this);
@@ -29,7 +30,7 @@ MapState::MapState(size_t r, size_t c, uint8_t difficulty,
 void MapState::run_level() {
     while (game_running) {
         for (auto& enemy : enemies) {
-            auto action = enemy->act(player.get_pos());
+            auto action = enemy->act(player->get_pos());
             switch (action.first) {
             case Action::Move:
                 move_enemy(action.second, enemy);

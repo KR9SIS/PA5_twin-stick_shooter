@@ -6,13 +6,13 @@
 
 class MapState {
   public:
-    std::vector<std::unique_ptr<Enemy>> enemies;
-    Player player;
-    const size_t ROWS;
-    const size_t COLUMNS;
+    std::vector<std::shared_ptr<Enemy>> enemies;
+    std::shared_ptr<Player> player;
+    const int8_t ROWS;
+    const int8_t COLUMNS;
     const uint8_t DIFFICULTY;
     const NcursesScreen& SCREEN;
-    std::vector<std::vector<std::unique_ptr<Entity>>> map;
+    std::vector<std::vector<std::shared_ptr<Entity>>> map;
     int difficulty;
     bool game_running;
 

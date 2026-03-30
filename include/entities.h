@@ -28,7 +28,7 @@ class Entity {
 
   protected:
     Entity(uint8_t max_health, uint8_t dmg, uint8_t move_speed, const char icon,
-           uint8_t start_x, uint8_t start_y)
+           uint8_t start_y, uint8_t start_x)
         : MAX_HP(max_health), DAMAGE(dmg), MOVE_SPEED(move_speed), ICON(icon),
           cur_hp(MAX_HP), cur_pos(start_y, start_x) {};
 };
@@ -39,7 +39,8 @@ class Player : public Entity {
     int8_t take_damage(int8_t dmg);
     void update();
 
-    Player();
+    Player(uint8_t start_y, uint8_t start_x)
+        : Entity(10, 2, UINT8_MAX, '@', start_y, start_x) {}
 };
 
 class Enemy : public Entity {
@@ -60,7 +61,8 @@ class Goblin : public Enemy {
     void attack() {
         void melee_attack();
     }
-    Goblin() : Enemy(5, 1, 1, 'g', 0, 0) {}
+    Goblin(uint8_t start_y, uint8_t start_x)
+        : Enemy(5, 1, 3, 'g', start_y, start_x) {}
 };
 
 class Wizard : public Enemy {

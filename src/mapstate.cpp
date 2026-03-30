@@ -121,7 +121,7 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
     }
     auto remaining_hp = entity->take_damage(dmg);
 
-    //end game if player is dead
+    // end game if player is dead
     if (entity.get() == player.get() && remaining_hp <= 0) {
         game_running = false;
     }
@@ -137,11 +137,11 @@ void MapState::move_player(position goal_pos) {
 bool MapState::move_pos(position old_pos, position new_pos) {
     std::scoped_lock lock(state_mutex);
     if (occupied(new_pos)) {
-        std::swap(map[old_pos.first][old_pos.second],
-                  map[new_pos.first][new_pos.second]);
-        return true;
+        return false;
     }
-    return false;
+    std::swap(map[old_pos.first][old_pos.second],
+              map[new_pos.first][new_pos.second]);
+    return true;
 }
 
 void MapState::ncurses_thread() {

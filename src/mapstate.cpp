@@ -172,7 +172,7 @@ void MapState::ncurses_thread() {
         // rendering something that isn't true.
         {
             std::scoped_lock lock(state_mutex);
-            SCREEN.render_frame(player, enemies);
+            SCREEN.render_frame(player, enemies, ROWS, COLUMNS);
         }
         SCREEN.sleep_until_next_frame();
     }

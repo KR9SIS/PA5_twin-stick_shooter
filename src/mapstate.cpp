@@ -43,10 +43,7 @@ void MapState::run_level() {
             std::pair<Action, position> action;
             // Make the enemy act. We acquire the lock so that the enemy always
             // gets the most up-do-date info.
-            {
-                std::scoped_lock lock(state_mutex);
-                action = enemy->act(player->get_pos());
-            }
+            action = enemy->act(player->get_pos());
             switch (action.first) {
             case Action::Move:
                 move_enemy(action.second, enemy);
@@ -89,10 +86,10 @@ void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
             enemy->set_pos(new_pos);
         }
     };
-    std::scoped_lock lock(state_mutex); // Acquire the lock on the state.
+    auto cur_pos = enemy->get_pos();
     for (uint8_t mov = 0; mov < enemy->MOVE_SPEED; mov++) {
-        auto dir = std::make_pair(goal_pos.first - enemy->cur_pos.first,
-                                  goal_pos.second - enemy->cur_pos.second);
+        auto dir = std::make_pair(goal_pos.first - cur_pos.first,
+                                  goal_pos.second - cur_pos.second);
         if (dir.first && dir.second) {
             if (rand() % 2) {
                 move(dir.first, true);
@@ -128,7 +125,6 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
 }
 
 void MapState::move_player(position goal_pos) {
-    std::scoped_lock lock(state_mutex);
     if (move_pos(player->get_pos(), goal_pos)) {
         player->set_pos(goal_pos);
     }
@@ -150,10 +146,7 @@ void MapState::ncurses_thread() {
         // Try to acquire the lock on the state. If we can't, just skip this
         // frame. This is so that we don't block the main thread if the player
         // is in the middle of moving or attacking.
-        {
-            std::scoped_lock lock(state_mutex);
-            cur_pos = player->get_pos();
-        }
+        cur_pos = player->get_pos();
 
         // Handle input and get new position. If the player wants to quit,
         // then break.
@@ -167,10 +160,7 @@ void MapState::ncurses_thread() {
         // render the true state of the game, even if something else is being
         // updated. This might cause some stuttering, but it's better than
         // rendering something that isn't true.
-        {
-            std::scoped_lock lock(state_mutex);
-            SCREEN.render_frame(player, enemies, ROWS, COLUMNS);
-        }
+        SCREEN.render_frame(player, enemies, ROWS, COLUMNS);
         SCREEN.sleep_until_next_frame();
     }
 }

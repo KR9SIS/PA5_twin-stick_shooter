@@ -2,8 +2,10 @@
 #include "ncurses_screen.h"
 #include <chrono>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <memory>
+#include <ncurses.h>
 #include <thread>
 #include <utility>
 
@@ -23,8 +25,8 @@ MapState::MapState(size_t r, size_t c, uint8_t difficulty,
         map[i][i] = enemies.back();
     }
 
-    std::thread input_thread(&MapState::handle_input, this);
-    input_thread.detach();
+    std::thread ncurses_thread(&MapState::ncurses_thread, this);
+    ncurses_thread.detach();
 }
 
 void MapState::run_level() {
@@ -40,7 +42,6 @@ void MapState::run_level() {
                 break;
             }
         }
-        SCREEN.render_frame(player, enemies);
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
@@ -72,6 +73,8 @@ void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
         if (occupied(new_pos)) {
             return;
         }
+
+        // WARN: RACE CONDITION
         std::swap(map[cur_pos.first][cur_pos.second],
                   map[new_pos.first][new_pos.second]);
 
@@ -108,21 +111,22 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
     entity->change_health(-dmg);
 }
 
-void MapState::handle_input() {
 void MapState::move_player(position goal_pos) {
     if (occupied(goal_pos)) {
         return;
     }
+    // WARN: RACE CONDITION
     std::swap(map[player->cur_pos.first][player->cur_pos.second],
               map[goal_pos.first][goal_pos.second]);
 
     player->set_pos(goal_pos);
 }
 
+void MapState::ncurses_thread() {
     while (game_running) {
-        SCREEN.handle_input(player.cur_pos.first, player.cur_pos.second,
-                            game_running);
         auto new_pos = SCREEN.handle_input(player->get_pos(), game_running);
         move_player(new_pos);
+        SCREEN.render_frame(player, enemies);
+        SCREEN.sleep_until_next_frame();
     }
 }

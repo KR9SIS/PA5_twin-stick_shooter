@@ -28,5 +28,5 @@ class MapState {
 
     bool occupied(position pos);
 
-    void handle_input();
+    void ncurses_thread();
 };

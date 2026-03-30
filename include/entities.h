@@ -23,6 +23,8 @@ class Entity {
     void set_pos(position new_pos);
     void change_health(int8_t dmg);
 
+    int8_t take_damage(int8_t dmg);
+
   protected:
     Entity(uint8_t max_health, uint8_t dmg, uint8_t move_speed, uint8_t start_x,
            uint8_t start_y)
@@ -33,7 +35,6 @@ class Entity {
 class Player : public Entity {
   public:
     void attack();
-    int8_t take_damage(int8_t dmg);
     void update();
 
     Player();

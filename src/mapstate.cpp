@@ -25,14 +25,28 @@ MapState::MapState(size_t r, size_t c, uint8_t difficulty,
         map[i][i] = enemies.back();
     }
 
-    std::thread ncurses_thread(&MapState::ncurses_thread, this);
-    ncurses_thread.detach();
+    ncurses_worker = std::thread(&MapState::ncurses_thread, this);
+}
+
+MapState::~MapState() {
+    game_running.store(false); // Make the atomic_bool be false.
+    // If the ncurses thread is still running, join it.
+    if (ncurses_worker.joinable()) {
+        ncurses_worker.join();
+    }
 }
 
 void MapState::run_level() {
-    while (game_running) {
+    // Load the current state of the game_running atomic_bool.
+    while (game_running.load()) {
         for (auto& enemy : enemies) {
-            auto action = enemy->act(player->get_pos());
+            std::pair<Action, position> action;
+            // Make the enemy act. We acquire the lock so that the enemy always
+            // gets the most up-do-date info.
+            {
+                std::scoped_lock lock(state_mutex);
+                action = enemy->act(player->get_pos());
+            }
             switch (action.first) {
             case Action::Move:
                 move_enemy(action.second, enemy);
@@ -46,12 +60,21 @@ void MapState::run_level() {
     }
 }
 
-bool MapState::occupied(position pos) {
+// Private version. Every time we call this, we assume we're already holding
+// the lock.
+bool MapState::occupied_unlocked(position pos) const {
     if (0 <= pos.first && pos.first < ROWS && 0 <= pos.second &&
         pos.second < COLUMNS) {
         return map[pos.first][pos.second] != nullptr;
     }
     return true;
+}
+
+// Public version. Every time we call this, we *don't* assume we're holding the
+// lock, so we acquire it here.
+bool MapState::occupied(position pos) {
+    std::scoped_lock lock(state_mutex); // Acquire the lock.
+    return occupied_unlocked(pos);      // Call the unlocked version.
 }
 
 void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
@@ -70,16 +93,17 @@ void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
             new_pos.second += (dir > 0) ? 1 : -1;
         }
 
-        if (occupied(new_pos)) {
+        if (occupied_unlocked(new_pos)) {
             return;
         }
 
-        // WARN: RACE CONDITION
+        // WARN: RACE CONDITION (Might be resolved now).
         std::swap(map[cur_pos.first][cur_pos.second],
                   map[new_pos.first][new_pos.second]);
 
         enemy->set_pos(new_pos);
     };
+    std::scoped_lock lock(state_mutex); // Acquire the lock on the state.
     for (uint8_t mov = 0; mov < enemy->MOVE_SPEED; mov++) {
         auto dir = std::make_pair(goal_pos.first - enemy->cur_pos.first,
                                   goal_pos.second - enemy->cur_pos.second);
@@ -104,6 +128,7 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
         return; // TODO: Add radius calculations
     }
 
+    std::scoped_lock lock(state_mutex);
     auto& entity = map[pos.first][pos.second];
     if (entity == nullptr) {
         return;
@@ -112,10 +137,10 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
 }
 
 void MapState::move_player(position goal_pos) {
-    if (occupied(goal_pos)) {
+    std::scoped_lock lock(state_mutex);
+    if (occupied_unlocked(goal_pos)) {
         return;
     }
-    // WARN: RACE CONDITION
     std::swap(map[player->cur_pos.first][player->cur_pos.second],
               map[goal_pos.first][goal_pos.second]);
 
@@ -123,10 +148,32 @@ void MapState::move_player(position goal_pos) {
 }
 
 void MapState::ncurses_thread() {
-    while (game_running) {
-        auto new_pos = SCREEN.handle_input(player->get_pos(), game_running);
+    while (game_running.load()) {
+        position cur_pos;
+        // Try to acquire the lock on the state. If we can't, just skip this
+        // frame. This is so that we don't block the main thread if the player
+        // is in the middle of moving or attacking.
+        {
+            std::scoped_lock lock(state_mutex);
+            cur_pos = player->get_pos();
+        }
+
+        // Handle input and get new position. If the player wants to quit,
+        // then break.
+        auto new_pos = SCREEN.handle_input(cur_pos, game_running);
+        if (!game_running.load()) {
+            break;
+        }
+
         move_player(new_pos);
-        SCREEN.render_frame(player, enemies);
+        // Render the frame. We acquire the lock to make sure that we always
+        // render the true state of the game, even if something else is being
+        // updated. This might cause some stuttering, but it's better than
+        // rendering something that isn't true.
+        {
+            std::scoped_lock lock(state_mutex);
+            SCREEN.render_frame(player, enemies);
+        }
         SCREEN.sleep_until_next_frame();
     }
 }

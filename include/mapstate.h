@@ -1,7 +1,10 @@
 #include "entities.h"
 #include "ncurses_screen.h"
+#include <atomic>
 #include <cstdint>
 #include <memory>
+#include <mutex>
+#include <thread>
 #include <vector>
 
 class MapState {
@@ -14,10 +17,10 @@ class MapState {
     const NcursesScreen& SCREEN;
     std::vector<std::vector<std::shared_ptr<Entity>>> map;
     int difficulty;
-    bool game_running;
 
     MapState(size_t rows, size_t columns, uint8_t difficulty,
              const NcursesScreen& screen);
+    ~MapState();
 
     void run_level();
     void get_input();
@@ -29,4 +32,11 @@ class MapState {
     bool occupied(position pos);
 
     void ncurses_thread();
+
+  private:
+    bool occupied_unlocked(position pos) const;
+
+    std::mutex state_mutex;
+    std::thread ncurses_worker;
+    std::atomic_bool game_running;
 };

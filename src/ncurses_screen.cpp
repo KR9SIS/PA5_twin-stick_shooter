@@ -51,7 +51,8 @@ void NcursesScreen::render_frame(
     ::refresh();
 }
 
-position NcursesScreen::handle_input(position cur_pos, bool& is_running) const {
+position NcursesScreen::handle_input(position cur_pos,
+                                     std::atomic_bool& is_running) const {
     // Update player's position according to the provided input.
     switch (int key_pressed = ::getch(); key_pressed) {
     case 'w':

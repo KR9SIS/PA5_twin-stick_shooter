@@ -53,39 +53,45 @@ bool MapState::occupied(position pos) {
     return true;
 }
 
-void MapState::move_enemy(position goal_pos, std::unique_ptr<Enemy>& enemy) {
-    auto cur_pos = enemy->get_pos();
-
-    auto move = [this, &cur_pos](int8_t dir) {
+void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
+    auto move = [this, &enemy](int8_t dir, bool is_row) {
         // get new position
         // check if new position is occupied
         // if it is continue
         // else swap cur_pos and new_pos
 
+        auto cur_pos = enemy->get_pos();
         position new_pos = cur_pos;
-        new_pos.first += (dir > 0) ? 1 : -1;
+
+        if (is_row) {
+            new_pos.first += (dir > 0) ? 1 : -1;
+        } else {
+            new_pos.second += (dir > 0) ? 1 : -1;
+        }
 
         if (occupied(new_pos)) {
             return;
         }
         std::swap(map[cur_pos.first][cur_pos.second],
                   map[new_pos.first][new_pos.second]);
+
+        enemy->set_pos(new_pos);
     };
     for (uint8_t mov = 0; mov < enemy->MOVE_SPEED; mov++) {
-        auto dir = std::make_pair(goal_pos.first - cur_pos.first,
-                                  goal_pos.second - cur_pos.second);
+        auto dir = std::make_pair(goal_pos.first - enemy->cur_pos.first,
+                                  goal_pos.second - enemy->cur_pos.second);
         if (dir.first && dir.second) {
             if (rand() % 2) {
-                move(dir.first);
+                move(dir.first, true);
             } else {
-                move(dir.second);
+                move(dir.second, false);
             }
 
         } else if (dir.first) {
-            move(dir.first);
+            move(dir.first, true);
 
         } else if (dir.second) {
-            move(dir.second);
+            move(dir.second, false);
         }
     }
 }

@@ -45,7 +45,11 @@ void MapState::run_level() {
 }
 
 bool MapState::occupied(position pos) {
-    return map[pos.first][pos.second] != nullptr;
+    if (0 <= pos.first && pos.first < ROWS && 0 <= pos.second &&
+        pos.second < COLUMNS) {
+        return map[pos.first][pos.second] != nullptr;
+    }
+    return true;
 }
 
 void MapState::move_enemy(position goal_pos, std::unique_ptr<Enemy>& enemy) {

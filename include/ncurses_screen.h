@@ -16,7 +16,10 @@ class NcursesScreen final {
     void render_frame(const std::shared_ptr<Player>& player,
                       const std::vector<std::shared_ptr<Enemy>>& enemies,
                       int8_t rows, int8_t columns) const;
-    position handle_input(position cur_pos, std::atomic_bool& is_running) const;
+    position handle_input(position cur_pos,
+                      std::atomic_bool& is_running,
+                      position& shoot_delta,
+                      bool& did_shoot) const;
     void sleep_until_next_frame() const;
 
   private:

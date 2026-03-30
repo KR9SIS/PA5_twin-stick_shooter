@@ -84,9 +84,15 @@ void NcursesScreen::render_frame(
 }
 
 position NcursesScreen::handle_input(position cur_pos,
-                                     std::atomic_bool& is_running) const {
-    // Update player's position according to the provided input.
+                                     std::atomic_bool& is_running,
+                                     position& shoot_delta,
+                                     bool& did_shoot) const {
+    // default: no shot
+    shoot_delta = {0, 0};
+    did_shoot = false;
+
     switch (int key_pressed = ::getch(); key_pressed) {
+    // movement: WASD
     case 'w':
         cur_pos.first--;
         return cur_pos;
@@ -99,6 +105,25 @@ position NcursesScreen::handle_input(position cur_pos,
     case 'd':
         cur_pos.second++;
         return cur_pos;
+
+    // shooting
+    case KEY_UP:
+        shoot_delta = {-1, 0};
+        did_shoot = true;
+        return cur_pos;
+    case KEY_DOWN:
+        shoot_delta = {1, 0};
+        did_shoot = true;
+        return cur_pos;
+    case KEY_LEFT:
+        shoot_delta = {0, -1};
+        did_shoot = true;
+        return cur_pos;
+    case KEY_RIGHT:
+        shoot_delta = {0, 1};
+        did_shoot = true;
+        return cur_pos;
+
     case 'q':
         is_running = false;
         return cur_pos;

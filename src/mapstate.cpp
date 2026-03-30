@@ -173,9 +173,17 @@ void MapState::ncurses_thread() {
 
         // Handle input and get new position. If the player wants to quit,
         // then break.
-        auto new_pos = SCREEN.handle_input(cur_pos, game_running);
-        if (!game_running.load()) {
-            break;
+        position shoot_delta;
+        bool did_shoot = false;
+        auto new_pos = SCREEN.handle_input(cur_pos, game_running, shoot_delta, did_shoot);
+        if (!game_running.load()) break;
+
+        if (did_shoot) {
+            std::scoped_lock lock(state_mutex);
+            auto proj =
+                std::make_shared<Projectile>(player->get_pos(), shoot_delta, player->DAMAGE);
+            enemies.push_back(proj);
+            map[proj->cur_pos.first][proj->cur_pos.second] = proj;
         }
 
         move_player(new_pos);

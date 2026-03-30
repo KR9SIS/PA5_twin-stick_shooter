@@ -12,7 +12,7 @@ class NcursesScreen final {
     NcursesScreen& operator=(const NcursesScreen&) = delete;
 
     void render_frame(const std::shared_ptr<Player>& player,
-                      std::vector<std::shared_ptr<Enemy>>& enemies) const;
+                      const std::vector<std::shared_ptr<Enemy>>& enemies) const;
     position handle_input(position cur_pos, bool& is_running) const;
     void sleep_until_next_frame() const;
 

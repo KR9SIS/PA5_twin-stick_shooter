@@ -30,7 +30,7 @@ NcursesScreen::~NcursesScreen() {
 
 void NcursesScreen::render_frame(
     const std::shared_ptr<Player>& player,
-    std::vector<std::shared_ptr<Enemy>>& enemies) const {
+    const std::vector<std::shared_ptr<Enemy>>& enemies) const {
     ::clear(); // Clear the screen before drawing the new frame.
     // Print movement instructions.
     ::mvprintw(0, 0, "Use w,a,s,d to move. Press q to quit.");

@@ -24,17 +24,17 @@ class MapState {
 
     void run_level();
     void get_input();
+
+    bool move_pos(position old_pos, position new_pos);
     void move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy);
     void move_player(position goal_pos);
 
     void attack_pos(position pos, uint8_t dmg, uint8_t radius = 1);
 
-    bool occupied(position pos);
-
     void ncurses_thread();
 
   private:
-    bool occupied_unlocked(position pos) const;
+    bool occupied(position pos) const;
 
     std::mutex state_mutex;
     std::thread ncurses_worker;

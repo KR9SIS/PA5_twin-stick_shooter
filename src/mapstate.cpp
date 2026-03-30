@@ -62,19 +62,12 @@ void MapState::run_level() {
 
 // Private version. Every time we call this, we assume we're already holding
 // the lock.
-bool MapState::occupied_unlocked(position pos) const {
+bool MapState::occupied(position pos) const {
     if (0 <= pos.first && pos.first < ROWS && 0 <= pos.second &&
         pos.second < COLUMNS) {
         return map[pos.first][pos.second] != nullptr;
     }
     return true;
-}
-
-// Public version. Every time we call this, we *don't* assume we're holding the
-// lock, so we acquire it here.
-bool MapState::occupied(position pos) {
-    std::scoped_lock lock(state_mutex); // Acquire the lock.
-    return occupied_unlocked(pos);      // Call the unlocked version.
 }
 
 void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
@@ -92,16 +85,9 @@ void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
         } else {
             new_pos.second += (dir > 0) ? 1 : -1;
         }
-
-        if (occupied_unlocked(new_pos)) {
-            return;
+        if (move_pos(cur_pos, new_pos)) {
+            enemy->set_pos(new_pos);
         }
-
-        // WARN: RACE CONDITION (Might be resolved now).
-        std::swap(map[cur_pos.first][cur_pos.second],
-                  map[new_pos.first][new_pos.second]);
-
-        enemy->set_pos(new_pos);
     };
     std::scoped_lock lock(state_mutex); // Acquire the lock on the state.
     for (uint8_t mov = 0; mov < enemy->MOVE_SPEED; mov++) {
@@ -143,13 +129,19 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
 
 void MapState::move_player(position goal_pos) {
     std::scoped_lock lock(state_mutex);
-    if (occupied_unlocked(goal_pos)) {
-        return;
+    if (move_pos(player->get_pos(), goal_pos)) {
+        player->set_pos(goal_pos);
     }
-    std::swap(map[player->cur_pos.first][player->cur_pos.second],
-              map[goal_pos.first][goal_pos.second]);
+}
 
-    player->set_pos(goal_pos);
+bool MapState::move_pos(position old_pos, position new_pos) {
+    std::scoped_lock lock(state_mutex);
+    if (occupied(new_pos)) {
+        std::swap(map[old_pos.first][old_pos.second],
+                  map[new_pos.first][new_pos.second]);
+        return true;
+    }
+    return false;
 }
 
 void MapState::ncurses_thread() {

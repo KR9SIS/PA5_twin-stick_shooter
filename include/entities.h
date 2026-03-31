@@ -57,7 +57,7 @@ class Projectile : public Enemy {
     position delta;
 
     Projectile(position start, position d, uint8_t dmg)
-        : Enemy(/*hp*/ 1, dmg, /*move speed*/ 1, '*', start.first,
+        : Enemy(/*hp*/ 1, dmg, /*move speed*/ 10, '*', start.first,
                 start.second),
           delta(d) {}
 

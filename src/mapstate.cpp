@@ -42,7 +42,7 @@ void MapState::run_level() {
     while (game_running.load()) {
         for (auto& enemy : enemies) {
             std::pair<Action, position> enemy_action;
-            // Make the enemy act. 
+            // Make the enemy act.
             enemy_action = enemy->decide_action(player->get_pos(state_mutex));
             switch (enemy_action.first) {
             case Action::Move:
@@ -57,14 +57,21 @@ void MapState::run_level() {
     }
 }
 
+// Check if the position is out of bounds. No lock is needed for this, since
+// the bounds of the map never change.
+bool MapState::is_out_of_bounds(position pos) const {
+    return (pos.first < 0) || (pos.first >= ROWS) || (pos.second < 0) ||
+           (pos.second >= COLUMNS);
+}
+
 // Check if the position is occupied. Every time we call this, we assume we're
 // already holding the lock.
 bool MapState::is_occupied(position pos) const {
-    if (0 <= pos.first && pos.first < ROWS && 0 <= pos.second &&
-        pos.second < COLUMNS) {
-        return map[pos.first][pos.second] != nullptr;
+    if (is_out_of_bounds(pos)) {
+        return true;
     }
-    return true;
+
+    return map[(pos.first)][(pos.second)] != nullptr;
 }
 
 void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
@@ -109,6 +116,10 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
         return; // TODO: Add radius calculations
     }
 
+    if (is_out_of_bounds(pos)) {
+        return;
+    }
+
     std::scoped_lock lock(state_mutex);
     auto& entity = map[pos.first][pos.second];
     if (entity == nullptr) {
@@ -128,16 +139,19 @@ void MapState::move_player(position goal_pos) {
 
 void MapState::move_to_pos(Entity* entity, position new_pos) {
     position old_pos = entity->get_pos(state_mutex);
-    if (is_occupied(new_pos)) {
-        return;
-    }
+
     {
         std::scoped_lock lock(state_mutex);
+
+        if (is_occupied(new_pos)) {
+            return;
+        }
+
         std::swap(map[old_pos.first][old_pos.second],
                   map[new_pos.first][new_pos.second]);
     }
+
     entity->set_pos(state_mutex, new_pos);
-    return;
 }
 
 void MapState::ncurses_thread() {

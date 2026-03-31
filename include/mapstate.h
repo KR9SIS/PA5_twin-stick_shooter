@@ -34,7 +34,7 @@ class MapState {
     void ncurses_thread();
 
   private:
-    bool occupied(position pos) const;
+    bool is_occupied(position pos) const;
 
     std::mutex state_mutex;
     std::thread ncurses_worker;

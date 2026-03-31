@@ -41,16 +41,15 @@ void MapState::run_level() {
     // Load the current state of the game_running atomic_bool.
     while (game_running.load()) {
         for (auto& enemy : enemies) {
-            std::pair<Action, position> action;
-            // Make the enemy act. We acquire the lock so that the enemy always
-            // gets the most up-do-date info.
-            action = enemy->act(player->get_pos(state_mutex));
-            switch (action.first) {
+            std::pair<Action, position> enemy_action;
+            // Make the enemy act. 
+            enemy_action = enemy->decide_action(player->get_pos(state_mutex));
+            switch (enemy_action.first) {
             case Action::Move:
-                move_enemy(action.second, enemy);
+                move_enemy(enemy_action.second, enemy);
                 break;
             case Action::Attack:
-                attack_pos(action.second, enemy->DAMAGE);
+                attack_pos(enemy_action.second, enemy->DAMAGE);
                 break;
             }
         }
@@ -58,9 +57,9 @@ void MapState::run_level() {
     }
 }
 
-// Private version. Every time we call this, we assume we're already holding
-// the lock.
-bool MapState::occupied(position pos) const {
+// Check if the position is occupied. Every time we call this, we assume we're
+// already holding the lock.
+bool MapState::is_occupied(position pos) const {
     if (0 <= pos.first && pos.first < ROWS && 0 <= pos.second &&
         pos.second < COLUMNS) {
         return map[pos.first][pos.second] != nullptr;
@@ -129,7 +128,7 @@ void MapState::move_player(position goal_pos) {
 
 void MapState::move_to_pos(Entity* entity, position new_pos) {
     position old_pos = entity->get_pos(state_mutex);
-    if (occupied(new_pos)) {
+    if (is_occupied(new_pos)) {
         return;
     }
     {

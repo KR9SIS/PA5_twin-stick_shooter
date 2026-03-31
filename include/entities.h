@@ -47,7 +47,7 @@ class Player : public Entity {
 
 class Enemy : public Entity {
   public:
-    std::pair<Action, position> act(position player_pos);
+    std::pair<Action, position> decide_action(position player_pos);
     using Entity::Entity;
 };
 

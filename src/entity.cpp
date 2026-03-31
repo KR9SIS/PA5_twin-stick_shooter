@@ -1,11 +1,13 @@
 #include "entities.h"
 #include <cstdint>
 
-position Entity::get_pos() {
+position Entity::get_pos(std::mutex& state_mutex) const {
+    std::scoped_lock lock(state_mutex);
     return cur_pos;
 }
 
-void Entity::set_pos(position new_pos) {
+void Entity::set_pos(std::mutex& state_mutex, position new_pos) {
+    std::scoped_lock lock(state_mutex);
     cur_pos = new_pos;
 }
 

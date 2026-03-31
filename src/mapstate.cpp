@@ -83,9 +83,7 @@ void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
         } else {
             new_pos.second += (dir > 0) ? 1 : -1;
         }
-        if (move_pos(cur_pos, new_pos)) {
-            enemy->set_pos(state_mutex, new_pos);
-        }
+        move_to_pos(enemy.get(), new_pos);
     };
     auto cur_pos = enemy->get_pos(state_mutex);
     for (uint8_t mov = 0; mov < enemy->MOVE_SPEED; mov++) {
@@ -126,19 +124,21 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
 }
 
 void MapState::move_player(position goal_pos) {
-    if (move_pos(player->get_pos(state_mutex), goal_pos)) {
-        player->set_pos(state_mutex, goal_pos);
-    }
+    move_to_pos(player.get(), goal_pos);
 }
 
-bool MapState::move_pos(position old_pos, position new_pos) {
-    std::scoped_lock lock(state_mutex);
+void MapState::move_to_pos(Entity* entity, position new_pos) {
+    position old_pos = entity->get_pos(state_mutex);
     if (occupied(new_pos)) {
-        return false;
+        return;
     }
-    std::swap(map[old_pos.first][old_pos.second],
-              map[new_pos.first][new_pos.second]);
-    return true;
+    {
+        std::scoped_lock lock(state_mutex);
+        std::swap(map[old_pos.first][old_pos.second],
+                  map[new_pos.first][new_pos.second]);
+    }
+    entity->set_pos(state_mutex, new_pos);
+    return;
 }
 
 void MapState::ncurses_thread() {
@@ -151,7 +151,7 @@ void MapState::ncurses_thread() {
 
         // Handle input and get new position. If the player wants to quit,
         // then break.
-        auto new_pos = SCREEN.handle_input(cur_pos, game_running);
+        position new_pos = SCREEN.handle_input(cur_pos, game_running);
         if (!game_running.load()) {
             break;
         }

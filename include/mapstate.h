@@ -25,7 +25,7 @@ class MapState {
     void run_level();
     void get_input();
 
-    bool move_pos(position old_pos, position new_pos);
+    void move_to_pos(Entity* entity, position new_pos);
     void move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy);
     void move_player(position goal_pos);
 

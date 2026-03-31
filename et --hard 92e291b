@@ -1,0 +1,66 @@
+[33m174b615[m[33m ([m[1;36mHEAD -> [m[1;32mplayer-projectile[m[33m, [m[1;31morigin/player-projectile[m[33m)[m Merge branch 'feat-ncurses-setup' of https://github.com/KR9SIS/PA5_twin-stick_shooter into player-projectile
+[33m92e291b[m shooting projectiles
+[33m034329c[m[33m ([m[1;31morigin/feat-ncurses-setup[m[33m, [m[1;32mfeat-ncurses-setup[m[33m)[m Make position access methods in `Entity` class use mutex locks
+[33me93fa9c[m Merge branch 'feat-ncurses-setup' of https://github.com/KR9SIS/PA5_twin-stick_shooter into player-projectile
+[33m33eed89[m handle shoot input wip
+[33m480d68a[m Removed extra locks
+[33m0fdf6b1[m Fix logic error in move_pos
+[33m4989f43[m projectile behaviour
+[33m6da3a60[m Created move_pos function and used only one occupied function
+[33m02cda5f[m[33m ([m[1;31morigin/feat--take-dmg[m[33m)[m player death implemented
+[33m334f101[m Merge branch 'feat-ncurses-setup' of https://github.com/KR9SIS/PA5_twin-stick_shooter into feat--take-dmg
+[33mcdf9405[m compile error fix
+[33md20d2d1[m Refactor attack_pos to use take_damage method for health reduction
+[33m673707a[m moved take dmg to entity instead of player
+[33m86629c5[m Implement take_damage function in Player class
+[33mc06e866[m Change NcursesScreen to create configurable battle subwindow with a drawn border around it
+[33m6cd949f[m Fix race condition in `MapState`'s game state management with mutexes
+[33m30d6602[m Change `enemy` vector parameter to const reference in `render_frame()` method
+[33mfc61558[m Add minor explanatory comments to NcursesScreen
+[33mbcce64c[m Moved all of ncurses to it's own seperate thread
+[33m3d7143a[m Implemented a funciton for moving the player on the map
+[33m586ae47[m Fixed bug in move_enemy and allowed for horizontal movement
+[33m5d6a4d0[m Properly initialized players and enemies unto the map
+[33mf3252db[m Updated occupied function with proper bounds checking
+[33mdde86bd[m Started implementing functionality to make MapState command NCURSES screen to update the map
+[33me21e8d2[m Allowed Goblin to inherit Entity constructor and added a custom icon to constructor
+[33me602047[m Merge branch 'main' into feat-ncurses-setup
+[33ma6a457f[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m Merge branch 'feat-entities'
+[33m1529a6b[m[33m ([m[1;31morigin/feat-entities[m[33m)[m Removed unnecessary player functions
+[33m9d57660[m Properly initialized map variable for MapState
+[33m798234e[m Removed unused entity functions
+[33mc4a8332[m Implemented attack_pos MapState function
+[33m81a04f0[m Merge branch 'main' into feat-ncurses-setup
+[33m9c77b26[m Implemented move_enemy MapState function
+[33m72a36c7[m Created position type
+[33m51a71cf[m Updated entity to use uint8 since variables cannot be negative
+[33mdd51e32[m MapState::run_level first draft
+[33m50b7a8a[m to merge to main
+[33mfe7ce4b[m enemy loop wip
+[33m89348ac[m wip
+[33ma0141f4[m[33m ([m[1;31morigin/feat-mapstate-loop[m[33m)[m to merge to main
+[33me680d6b[m enemy loop wip
+[33m031a4fd[m Updated enums for Action and direction
+[33m14e8ddb[m Merge branch 'main' of https://github.com/KR9SIS/PA5_twin-stick_shooter into feat-mapstate-loop
+[33ma628948[m wip
+[33m3bfd855[m Merge branch 'feat-ncurses-setup'
+[33m2ee2a53[m Change .hpp file extensions to .h
+[33m8b294eb[m Add `NcursesScreen` class and move ncurses rendering and input handling to that
+[33meef9ec4[m Renamed hpp to h
+[33m717b7ae[m Remove "using enum" from main.cpp
+[33ma5b8cdd[m Change variable names to match Gísli style.
+[33mced33ce[m Refactor main.cpp with rendered colored characters
+[33mc3f288e[m Add C++20 standard flag to CXXFLAGS in Makefile
+[33md4511f6[m Refactor ncurses function calls to use scope resolution operator for clarity and precision
+[33m99b22f5[m Add initial experimentation code for NCURSES
+[33m5b14934[m Add NCURSES to Makefile
+[33md591cf4[m Add temp. initial code to silence make errors
+[33m6c4e021[m Refactor `compile_commands.json` to be compatible with my PC
+[33m667ed82[m Added groundwork for include files and basic declarations and definitions
+[33m699274a[m Redid commit for Makefile and compile_commands.json
+[33medb1f6e[m Undo accidental changes to compile_commands.json and Makefile
+[33mfd3a4bf[m Merge branch 'main' of https://github.com/KR9SIS/PA5_twin-stick_shooter
+[33m4781e09[m Update .gitignore to include extra build artifacts and IDE files
+[33m12bc719[m Added files for project and entity declaration
+[33me3d6f35[m Add .clang-format file for consistent formatting
+[33m15b175a[m Initial Setup

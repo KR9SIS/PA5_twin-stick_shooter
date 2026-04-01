@@ -137,7 +137,7 @@ void NcursesScreen::render_frame(
     EntityRenderData player,
     const std::vector<EntityRenderData>& enemies_render_data,
     const std::vector<BulletRenderData>& bullets_render_data, int8_t rows,
-    int8_t columns, const InputState& input_state) const {
+    int8_t columns, const InputState& input_state) {
     // Create the standard plane, i.e. the entire terminal window.
     ncplane* const stdplane = ::notcurses_stdplane(notcurses_);
     ::ncplane_erase(stdplane);
@@ -199,7 +199,7 @@ void NcursesScreen::sleep_until_next_frame() const {
         std::chrono::milliseconds(refresh_interval_ms_));
 }
 
-void NcursesScreen::setup_battle_plane(int8_t rows, int8_t columns) const {
+void NcursesScreen::setup_battle_plane(int8_t rows, int8_t columns) {
     if (battle_plane_ == nullptr) {
         ncplane_options options{
             .y = BATTLE_PLANE_START_ROW,
@@ -213,7 +213,7 @@ void NcursesScreen::setup_battle_plane(int8_t rows, int8_t columns) const {
             .margin_b = 0,
             .margin_r = 0,
         };
-        // Create the battle plane as a child of the standard plane.
+        // Create the battle plane as a subwindow of the standard plane.
         battle_plane_ =
             ::ncplane_create(::notcurses_stdplane(notcurses_), &options);
         // Check if it was created successfully.

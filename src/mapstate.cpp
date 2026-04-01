@@ -293,7 +293,6 @@ void MapState::create_render_state(
     // the shared state of the game.
     std::scoped_lock lock(state_mutex);
 
-    // Update the player's render data.
     player_render_data = {.pos = player->cur_pos, .icon = player->ICON};
 
     // Update the enemies' render data.
@@ -358,6 +357,8 @@ void MapState::ncurses_thread() {
         move_test_bullets_forward(now);
 
         // Create render data for render_frame().
+        // TODO: Replace the whole “render data” system with just getting the data
+        // from the entities directly.
         EntityRenderData player_render;
         std::vector<EntityRenderData> enemies_render_data;
         std::vector<BulletRenderData> bullets_render_data;

@@ -215,6 +215,9 @@ void MapState::spawn_test_bullets(const InputState& input_state,
                                   std::chrono::steady_clock::time_point now) {
     const position player_pos = player->get_pos(state_mutex);
 
+    // Create bullets for each held direction key (for input key testing).
+    // TODO: Change this so that bullets can only be fired from one direction.
+    // TODO: Add diagonal shooting?
     for (InputDir input_dir :
          {InputDir::Up, InputDir::Down, InputDir::Left, InputDir::Right}) {
         if (!is_dir_active(input_state, input_dir, true)) {
@@ -234,10 +237,12 @@ void MapState::spawn_test_bullets(const InputState& input_state,
         const position spawn_pos{
             static_cast<int8_t>(player_pos.first + pos_diff.first),
             static_cast<int8_t>(player_pos.second + pos_diff.second)};
+        // Check if spawn position is out of bounds.
         if (is_out_of_bounds(spawn_pos)) {
             continue;
         }
 
+        // Get the lock, since we're changing shared data.
         std::scoped_lock lock(state_mutex);
         test_bullets.push_back({.pos = spawn_pos,
                                 .pos_diff = pos_diff,
@@ -252,26 +257,31 @@ void MapState::move_test_bullets_forward(
     std::chrono::steady_clock::time_point now) {
     std::scoped_lock lock(state_mutex);
 
+    // TODO: There's gotta be a more elegant solution to this...
     auto next_end = std::remove_if(
         test_bullets.begin(), test_bullets.end(),
         [this, now](TestBullet& bullet) {
+            // Only move the bullet if enough time has passed.
             if (now - bullet.last_moved_at < BULLET_STEP_INTERVAL) {
-                return false;
+                return false; // Don't remove the bullet.
             }
 
             bullet.last_moved_at = now;
+            // Calculate the bullet's next position.
             const position next_pos{
                 static_cast<int8_t>(bullet.pos.first + bullet.pos_diff.first),
                 static_cast<int8_t>(bullet.pos.second +
                                     bullet.pos_diff.second)};
+            // If the next position is out of bounds, remove the bullet.
             if (is_out_of_bounds(next_pos)) {
-                return true;
+                return true; // Remove the bullet.
             }
 
             bullet.pos = next_pos;
-            return false;
+            return false; // Don't remove the bullet.
         });
 
+    // Erase the bullets that need to be removed.
     test_bullets.erase(next_end, test_bullets.end());
 }
 
@@ -279,10 +289,14 @@ void MapState::create_render_state(
     EntityRenderData& player_render_data,
     std::vector<EntityRenderData>& enemies_render_data,
     std::vector<BulletRenderData>& bullets_render_data) const {
+    // Create a lock for the duration of this function, since we're accessing
+    // the shared state of the game.
     std::scoped_lock lock(state_mutex);
 
+    // Update the player's render data.
     player_render_data = {.pos = player->cur_pos, .icon = player->ICON};
 
+    // Update the enemies' render data.
     enemies_render_data.clear();
     enemies_render_data.reserve(enemies.size());
     for (const auto& enemy : enemies) {
@@ -290,6 +304,7 @@ void MapState::create_render_state(
             {.pos = enemy->cur_pos, .icon = enemy->ICON});
     }
 
+    // Update the bullets' render data.
     bullets_render_data.clear();
     bullets_render_data.reserve(test_bullets.size());
     for (const TestBullet& bullet : test_bullets) {
@@ -335,11 +350,14 @@ void MapState::ncurses_thread() {
             break;
         }
 
+        // Create a steady_clock time point for the current time, that will be
+        // used for the upcoming methods.
         const auto now = std::chrono::steady_clock::now();
         update_player_from_input(input_state, now);
         spawn_test_bullets(input_state, now);
         move_test_bullets_forward(now);
 
+        // Create render data for render_frame().
         EntityRenderData player_render;
         std::vector<EntityRenderData> enemies_render_data;
         std::vector<BulletRenderData> bullets_render_data;

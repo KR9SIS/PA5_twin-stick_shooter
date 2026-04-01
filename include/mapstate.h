@@ -36,6 +36,10 @@ class MapState {
   private:
     bool occupied(position pos) const;
 
+    void remove_dead();
+    bool move_projectile(size_t index, Projectile *proj);
+    void handle_shot(position shoot_delta);
+
     std::mutex state_mutex;
     std::thread ncurses_worker;
     std::atomic_bool game_running;

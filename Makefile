@@ -1,8 +1,10 @@
 # Compiler/config
 CXX := g++
+NOTCURSES_CFLAGS := $(shell pkg-config --cflags notcurses-core)
+NOTCURSES_LIBS := $(shell pkg-config --libs notcurses-core)
 CXXFLAGS := -Wall -Werror -Wpedantic -std=c++20
-CPPFLAGS := -Iinclude -MMD -MP
-LDLIBS := -lncurses
+CPPFLAGS := -Iinclude -MMD -MP $(NOTCURSES_CFLAGS)
+LDLIBS := $(NOTCURSES_LIBS)
 DEBUGFLAGS := -ggdb -fsanitize=address -fsanitize=undefined
 
 ifdef DEBUG

@@ -54,8 +54,8 @@ void MapState::run_level() {
         std::size_t i = 0;
         while (i < enemies.size()) {
             auto& enemy = enemies[i];
-
-            // irojectiles move in a straight line and attack anything they hit
+            // TODO setja inní functions
+            // projectiles move in a straight line and attack anything they hit
             if (auto* proj = dynamic_cast<Projectile*>(enemy.get())) {
                 bool alive = true;
                 for (uint8_t mov = 0; mov < enemy->MOVE_SPEED && alive; ++mov) {
@@ -223,6 +223,8 @@ bool MapState::move_pos(position old_pos, position new_pos) {
     return true;
 }
 
+// TODO setja inní functions. Kalla alltaf á get pos eða set pos ef þarf í staðinn fyrir að kóða mitt eigið. 
+// TODO if I need an occupancy check. scoped lock, then call is_occupied()
 void MapState::ncurses_thread() {
     while (game_running.load()) {
         position cur_pos;

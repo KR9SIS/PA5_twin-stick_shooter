@@ -47,3 +47,4 @@ obj/
 # My (Gísli's) additions:
 /build
 /.vscode
+/compile_commands.json

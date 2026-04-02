@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <utility>
 
-std::pair<Action, position> Enemy::act(position player_pos) {
+std::pair<Action, position> Enemy::decide_action(position player_pos) {
     // Manhattan Distance Formula
     uint8_t dist = std::abs(player_pos.first - cur_pos.first) +
                    std::abs(player_pos.second - cur_pos.second);

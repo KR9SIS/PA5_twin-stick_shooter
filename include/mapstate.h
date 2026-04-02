@@ -25,7 +25,7 @@ class MapState {
     void run_level();
     void get_input();
 
-    bool move_pos(position old_pos, position new_pos);
+    void move_to_pos(Entity* entity, position new_pos);
     void move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy);
     void move_player(position goal_pos);
 
@@ -34,7 +34,8 @@ class MapState {
     void ncurses_thread();
 
   private:
-    bool occupied(position pos) const;
+    bool is_out_of_bounds(position pos) const;
+    bool is_occupied(position pos) const;
 
     void remove_dead();
     bool move_projectile(size_t index, Projectile *proj);

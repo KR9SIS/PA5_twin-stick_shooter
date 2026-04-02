@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <mutex>
 #include <utility>
 
 #pragma once
@@ -22,8 +23,8 @@ class Entity {
 
     virtual ~Entity() = default;
 
-    position get_pos();
-    void set_pos(position new_pos);
+    position get_pos(std::mutex& state_mutex) const;
+    void set_pos(std::mutex& state_mutex, position new_pos);
     void change_health(int8_t dmg);
 
     int8_t take_damage(int8_t dmg);
@@ -46,7 +47,7 @@ class Player : public Entity {
 
 class Enemy : public Entity {
   public:
-    virtual std::pair<Action, position> act(position player_pos);
+    virtual std::pair<Action, position> decide_action(position player_pos);
     using Entity::Entity;
 };
 
@@ -61,7 +62,7 @@ class Projectile : public Enemy {
           delta(d) {}
 
     // Projectiles ignore the player's position
-    std::pair<Action, position> act(position player_pos) override;
+    std::pair<Action, position> decide_action(position player_pos) override;
 };
 
 class Giant : public Enemy {

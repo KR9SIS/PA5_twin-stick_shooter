@@ -5,6 +5,7 @@
 #include <fstream>
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <thread>
 #include <vector>
 
@@ -17,6 +18,7 @@ class MapState {
     const NcursesScreen& SCREEN;
     std::vector<std::shared_ptr<Enemy>> enemies;
     std::vector<std::vector<std::shared_ptr<Entity>>> map;
+
     int difficulty;
 
     std::ofstream logfile;
@@ -45,6 +47,11 @@ class MapState {
 
     bool move_projectile(size_t index, Projectile* proj);
     void handle_shot(position shoot_delta);
+
+    void push_shot(std::shared_ptr<Projectile> shot);
+    std::shared_ptr<Projectile> pop_shot();
+    std::mutex queue_mutex;
+    std::queue<std::shared_ptr<Projectile>> shot_queue;
 
     std::mutex state_mutex;
     std::thread ncurses_worker;

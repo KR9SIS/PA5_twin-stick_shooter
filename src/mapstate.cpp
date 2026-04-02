@@ -50,17 +50,13 @@ void MapState::run_level() {
     while (game_running.load()) {
         std::size_t i = 0;
         while (i < enemies.size()) {
-            std::shared_ptr<Enemy> entity;
-            {
-                std::scoped_lock lock(state_mutex);
-                entity = enemies[i];
+            auto entity = enemies[i];
+
+            auto shot = pop_shot();
+            if (shot != nullptr) {
+                add_enemy(shot);
             }
-            if (entity->cur_hp <= 0) {
-                logfile << std::format("rl {:p} Removing Dead\n",
-                                       static_cast<void*>(entity.get()));
-                remove_enemy(i);
-                continue;
-            }
+
             // projectiles move in a straight line and attack anything they hit
             if (auto* proj = dynamic_cast<Projectile*>(entity.get())) {
                 logfile << std::format("rl {:p} Moving Proj\n",
@@ -72,6 +68,12 @@ void MapState::run_level() {
                 continue;
             }
 
+            if (entity->cur_hp <= 0) {
+                logfile << std::format("rl {:p} Removing Dead\n",
+                                       static_cast<void*>(entity.get()));
+                remove_enemy(i);
+                continue;
+            }
             std::pair<Action, position> action;
             // Make the enemy act. We acquire the lock so that the enemy
             // always gets the most up-to-date info.
@@ -275,11 +277,23 @@ void MapState::handle_shot(position shoot_delta) {
     }
 
     if (!is_occupied(start)) {
-        auto proj =
-            std::make_shared<Projectile>(start, shoot_delta, player->DAMAGE);
-
-        add_enemy(proj);
+        push_shot(
+            std::make_shared<Projectile>(start, shoot_delta, player->DAMAGE));
     }
+}
+std::shared_ptr<Projectile> MapState::pop_shot() {
+    std::scoped_lock lock(queue_mutex);
+    if (shot_queue.empty()) {
+        return nullptr;
+    }
+    auto ret = shot_queue.front();
+    shot_queue.pop();
+    return ret;
+}
+
+void MapState::push_shot(std::shared_ptr<Projectile> shot) {
+    std::scoped_lock lock(queue_mutex);
+    shot_queue.push(shot);
 }
 
 // TODO setja inní functions. Kalla alltaf á get pos eða set pos ef þarf í

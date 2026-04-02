@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <utility>
 
@@ -88,6 +89,9 @@ void MapState::run_level() {
                 break;
             }
             i++;
+        }
+        if (enemies.size() == 0) {
+            game_running = false;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }

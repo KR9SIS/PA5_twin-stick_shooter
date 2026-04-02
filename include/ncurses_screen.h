@@ -10,8 +10,8 @@
 enum class InputDir : uint8_t { Up = 0, Down, Left, Right };
 constexpr uint8_t INPUT_DIRECTIONS_COUNT = 4;
 
-// TODO: Replace the whole “render data” system with just getting the data
-// from the entities directly.
+// TODO: Replace the whole “render data” system with just getting the data from
+// the entities directly.
 // ↓Temporary, just for testing↓.
 struct BulletRenderData {
     position pos{};

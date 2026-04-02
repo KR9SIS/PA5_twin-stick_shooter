@@ -285,6 +285,8 @@ void MapState::move_test_bullets_forward(
     test_bullets.erase(next_end, test_bullets.end());
 }
 
+// Creates the current rendering “state” or “snapshot” of the game, basically
+// the data that render_frame() needs to render the current state of the game.
 void MapState::create_render_state(
     EntityRenderData& player_render_data,
     std::vector<EntityRenderData>& enemies_render_data,
@@ -357,8 +359,8 @@ void MapState::ncurses_thread() {
         move_test_bullets_forward(now);
 
         // Create render data for render_frame().
-        // TODO: Replace the whole “render data” system with just getting the data
-        // from the entities directly.
+        // TODO: Replace the whole “render data” system with just getting the
+        // data from the entities directly.
         EntityRenderData player_render;
         std::vector<EntityRenderData> enemies_render_data;
         std::vector<BulletRenderData> bullets_render_data;

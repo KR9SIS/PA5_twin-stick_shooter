@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <format>
 #include <memory>
 #include <mutex>
 #include <ncurses.h>
@@ -31,8 +30,6 @@ MapState::MapState(size_t r, size_t c, uint8_t difficulty,
     for (int i = 0; i < difficulty * 5; i++) {
         add_enemy(std::make_shared<Goblin>(i, i));
     }
-
-    logfile.open("run.log");
 
     ncurses_worker = std::thread(&MapState::ncurses_thread, this);
 }
@@ -59,8 +56,6 @@ void MapState::run_level() {
 
             // projectiles move in a straight line and attack anything they hit
             if (auto* proj = dynamic_cast<Projectile*>(entity.get())) {
-                logfile << std::format("rl {:p} Moving Proj\n",
-                                       static_cast<void*>(entity.get()));
                 bool alive = move_projectile(i, proj);
                 if (alive) {
                     ++i;
@@ -69,8 +64,6 @@ void MapState::run_level() {
             }
 
             if (entity->cur_hp <= 0) {
-                logfile << std::format("rl {:p} Removing Dead\n",
-                                       static_cast<void*>(entity.get()));
                 remove_enemy(i);
                 continue;
             }
@@ -81,13 +74,9 @@ void MapState::run_level() {
 
             switch (action.first) {
             case Action::Move:
-                logfile << std::format("rl {:p} Move\n",
-                                       static_cast<void*>(entity.get()));
                 move_enemy(action.second, entity);
                 break;
             case Action::Attack:
-                logfile << std::format("rl {:p} Attack\n",
-                                       static_cast<void*>(entity.get()));
                 attack_pos(action.second, entity->DAMAGE);
                 break;
             }
@@ -317,11 +306,9 @@ void MapState::ncurses_thread() {
             break;
 
         if (did_shoot) {
-            logfile << "nc Shooting\n";
             handle_shot(shoot_delta);
         }
 
-        logfile << "nc Moving Player\n";
         move_player(new_pos);
         // Render the frame. We acquire the lock to make sure that we always
         // render the true state of the game, even if something else is being

@@ -1,4 +1,5 @@
 #include "mapstate.h"
+#include "entities.h"
 #include "ncurses_screen.h"
 #include <algorithm>
 #include <chrono>
@@ -17,17 +18,18 @@ MapState::MapState(size_t r, size_t c, uint8_t difficulty,
                    const NcursesScreen& screen)
     : ROWS(r), COLUMNS(c), DIFFICULTY(difficulty), SCREEN(screen),
       game_running(true) {
+
     map.resize(r);
     for (auto& row : map) {
         row.resize(c);
     }
+
     player = std::make_shared<Player>(r / 2, c / 2);
-    map[player->get_pos(state_mutex).first]
-       [player->get_pos(state_mutex).second] = player;
+    // No other threads run during construction so we may access player
+    map[player->cur_pos.first][player->cur_pos.second] = player;
 
     for (int i = 0; i < difficulty * 5; i++) {
-        enemies.push_back(std::make_shared<Goblin>(i, i));
-        map[i][i] = enemies.back();
+        add_enemy(std::make_shared<Goblin>(i, i));
     }
 
     logfile.open("run.log");
@@ -56,7 +58,7 @@ void MapState::run_level() {
             if (entity->cur_hp <= 0) {
                 logfile << std::format("rl {:p} Removing Dead\n",
                                        static_cast<void*>(entity.get()));
-                remove_dead(i);
+                remove_enemy(i);
                 continue;
             }
             // projectiles move in a straight line and attack anything they hit
@@ -93,8 +95,16 @@ void MapState::run_level() {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
+void MapState::add_enemy(std::shared_ptr<Enemy> entity) {
+    std::scoped_lock lock(state_mutex);
+    if (is_occupied(entity->cur_pos)) {
+        return;
+    }
+    map[entity->cur_pos.first][entity->cur_pos.second] = entity;
+    enemies.push_back(entity);
+}
 
-void MapState::remove_dead(std::size_t entity_idx) {
+void MapState::remove_enemy(std::size_t entity_idx) {
     std::scoped_lock lock(state_mutex);
     auto e = enemies[entity_idx];
     if (0 < e->cur_hp) {
@@ -102,6 +112,7 @@ void MapState::remove_dead(std::size_t entity_idx) {
     }
     enemies[entity_idx] = std::move(enemies[enemies.size() - 1]);
     enemies.pop_back();
+
     map[e->cur_pos.first][e->cur_pos.second].reset();
 }
 
@@ -117,9 +128,10 @@ bool MapState::move_projectile(size_t index, Projectile* proj) {
 
         position next{static_cast<int8_t>(next_row),
                       static_cast<int8_t>(next_col)};
+
         // if the projectile moves out of bounds, remove it
         if (is_out_of_bounds(next)) {
-            remove_dead(index);
+            remove_enemy(index);
             alive = false;
             break;
         }
@@ -127,15 +139,16 @@ bool MapState::move_projectile(size_t index, Projectile* proj) {
         // if projectile hits something, deal damage and remove projectile
         if (is_occupied(next)) {
             attack_pos(next, proj->DAMAGE);
-            remove_dead(index);
+            remove_enemy(index);
             alive = false;
             break;
         }
 
+        auto e = enemies[index].get();
         // Empty tile: move the projectile forward.
-        if (!move_to_pos(enemies[index].get(), next)) {
+        if (!move_to_pos(e, next)) {
             alive = false;
-            remove_dead(index);
+            remove_enemy(index);
             break;
         }
     }
@@ -261,18 +274,11 @@ void MapState::handle_shot(position shoot_delta) {
         return;
     }
 
-    std::shared_ptr<Entity> cell_after;
-    {
-        std::scoped_lock lock(state_mutex);
-        cell_after = map[start.first][start.second];
-    }
-
-    if (cell_after == nullptr) {
+    if (!is_occupied(start)) {
         auto proj =
             std::make_shared<Projectile>(start, shoot_delta, player->DAMAGE);
-        std::scoped_lock lock(state_mutex);
-        enemies.push_back(proj);
-        map[proj->cur_pos.first][proj->cur_pos.second] = proj;
+
+        add_enemy(proj);
     }
 }
 

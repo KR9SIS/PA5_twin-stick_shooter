@@ -10,12 +10,12 @@
 
 class MapState {
   public:
-    std::vector<std::shared_ptr<Enemy>> enemies;
     std::shared_ptr<Player> player;
     const int8_t ROWS;
     const int8_t COLUMNS;
     const uint8_t DIFFICULTY;
     const NcursesScreen& SCREEN;
+    std::vector<std::shared_ptr<Enemy>> enemies;
     std::vector<std::vector<std::shared_ptr<Entity>>> map;
     int difficulty;
 
@@ -40,7 +40,9 @@ class MapState {
     bool is_out_of_bounds(position pos) const;
     bool is_occupied(position pos) const;
 
-    void remove_dead(std::size_t entity_idx);
+    void remove_enemy(std::size_t entity_idx);
+    void add_enemy(std::shared_ptr<Enemy> entity);
+
     bool move_projectile(size_t index, Projectile* proj);
     void handle_shot(position shoot_delta);
 

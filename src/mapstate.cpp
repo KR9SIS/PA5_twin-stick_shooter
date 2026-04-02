@@ -149,8 +149,8 @@ bool MapState::move_projectile(size_t index, Projectile* proj) {
 // Check if the position is out of bounds. No lock is needed for this, since
 // the bounds of the map never change.
 bool MapState::is_out_of_bounds(position pos) const {
-    return (pos.first < 0) || (pos.first >= ROWS) || (pos.second < 0) ||
-           (pos.second >= COLUMNS);
+    return (pos.first < 0) || (ROWS <= pos.first) || (pos.second < 0) ||
+           (COLUMNS <= pos.second);
 }
 
 // Check if the position is occupied. Every time we call this, we assume we're

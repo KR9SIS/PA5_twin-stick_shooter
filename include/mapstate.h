@@ -66,4 +66,6 @@ class MapState {
     std::chrono::steady_clock::time_point last_player_move_time_{};
     std::array<std::chrono::steady_clock::time_point, ::INPUT_DIRECTIONS_COUNT>
         last_bullet_fire_time_{};
+
+    void remove_enemy(std::size_t i, std::shared_ptr<Enemy> enemy);
 };

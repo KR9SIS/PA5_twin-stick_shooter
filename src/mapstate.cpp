@@ -56,11 +56,26 @@ MapState::~MapState() {
         ncurses_worker.join();
     }
 }
+void MapState::remove_enemy(std::size_t i, std::shared_ptr<Enemy> enemy) {
+    std::scoped_lock lock(state_mutex);
+    enemies[i] = std::move(enemies[enemies.size() - 1]);
+    enemies.pop_back();
+
+    map[enemy->cur_pos.first][enemy->cur_pos.second].reset();
+}
 
 void MapState::run_level() {
     // Load the current state of the game_running atomic_bool.
     while (game_running.load()) {
-        for (auto& enemy : enemies) {
+        std::size_t i = 0;
+        while (i < enemies.size()) {
+            auto enemy = enemies[i];
+            if (enemy->cur_hp <= 0) {
+                // Remove dead enemies
+                remove_enemy(i, enemy);
+                continue;
+            }
+
             std::pair<Action, position> enemy_action;
             // Make the enemy act.
             enemy_action = enemy->decide_action(player->get_pos(state_mutex));
@@ -72,6 +87,7 @@ void MapState::run_level() {
                 attack_pos(enemy_action.second, enemy->DAMAGE);
                 break;
             }
+            i++;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
@@ -275,6 +291,13 @@ void MapState::move_test_bullets_forward(
             // If the next position is out of bounds, remove the bullet.
             if (is_out_of_bounds(next_pos)) {
                 return true; // Remove the bullet.
+            }
+            if (is_occupied(next_pos)) {
+                auto& entity = map[next_pos.first][next_pos.second];
+                if (entity == nullptr) {
+                    return true;
+                }
+                entity->take_damage(player->DAMAGE);
             }
 
             bullet.pos = next_pos;

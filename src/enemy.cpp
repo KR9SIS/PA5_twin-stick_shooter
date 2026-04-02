@@ -14,7 +14,7 @@ std::pair<Action, position> Enemy::decide_action(position player_pos) {
 }
 
 // Projectiles move straight in their delta direction
-std::pair<Action, position> Projectile::act(position /*player_pos*/) {
+std::pair<Action, position> Projectile::decide_action(position /*player_pos*/) {
     position goal = cur_pos;
 
     goal.first += delta.first * MOVE_SPEED;

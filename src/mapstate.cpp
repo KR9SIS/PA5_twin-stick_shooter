@@ -6,7 +6,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <format>
 #include <memory>
+#include <mutex>
 #include <ncurses.h>
 #include <thread>
 #include <utility>
@@ -28,6 +30,8 @@ MapState::MapState(size_t r, size_t c, uint8_t difficulty,
         map[i][i] = enemies.back();
     }
 
+    logfile.open("run.log");
+
     ncurses_worker = std::thread(&MapState::ncurses_thread, this);
 }
 
@@ -42,51 +46,63 @@ MapState::~MapState() {
 void MapState::run_level() {
     // Load the current state of the game_running atomic_bool.
     while (game_running.load()) {
-        // Remove any enemies/projectiles whose HP has dropped to 0.
-        remove_dead();
-
         std::size_t i = 0;
         while (i < enemies.size()) {
-            auto& enemy = enemies[i];
-            // TODO setja inní functions
+            std::shared_ptr<Enemy> entity;
+            {
+                std::scoped_lock lock(state_mutex);
+                entity = enemies[i];
+            }
+            if (entity->cur_hp <= 0) {
+                logfile << std::format("rl {:p} Removing Dead\n",
+                                       static_cast<void*>(entity.get()));
+                remove_dead(i);
+                continue;
+            }
             // projectiles move in a straight line and attack anything they hit
-            if (auto* proj = dynamic_cast<Projectile*>(enemy.get())) {
+            if (auto* proj = dynamic_cast<Projectile*>(entity.get())) {
+                logfile << std::format("rl {:p} Moving Proj\n",
+                                       static_cast<void*>(entity.get()));
                 bool alive = move_projectile(i, proj);
                 if (alive) {
                     ++i;
                 }
-            } else {
-                std::pair<Action, position> action;
-                // Make the enemy act. We acquire the lock so that the enemy
-                // always gets the most up-to-date info.
-                {
-                    std::scoped_lock lock(state_mutex);
-                    action = enemy->decide_action(player->get_pos(state_mutex));
-                }
-
-                switch (action.first) {
-                case Action::Move:
-                    move_enemy(action.second, enemy);
-                    break;
-                case Action::Attack:
-                    attack_pos(action.second, enemy->DAMAGE);
-                    break;
-                }
-
-                ++i;
+                continue;
             }
+
+            std::pair<Action, position> action;
+            // Make the enemy act. We acquire the lock so that the enemy
+            // always gets the most up-to-date info.
+            action = entity->decide_action(player->get_pos(state_mutex));
+
+            switch (action.first) {
+            case Action::Move:
+                logfile << std::format("rl {:p} Move\n",
+                                       static_cast<void*>(entity.get()));
+                move_enemy(action.second, entity);
+                break;
+            case Action::Attack:
+                logfile << std::format("rl {:p} Attack\n",
+                                       static_cast<void*>(entity.get()));
+                attack_pos(action.second, entity->DAMAGE);
+                break;
+            }
+
+            ++i;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
 
-void MapState::remove_dead() {
+void MapState::remove_dead(std::size_t entity_idx) {
     std::scoped_lock lock(state_mutex);
-    enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
-                                 [](const std::shared_ptr<Enemy>& e) {
-                                     return e->cur_hp <= 0;
-                                 }),
-                  enemies.end());
+    auto e = enemies[entity_idx];
+    if (0 < e->cur_hp) {
+        return;
+    }
+    enemies[entity_idx] = std::move(enemies[enemies.size() - 1]);
+    enemies.pop_back();
+    map[e->cur_pos.first][e->cur_pos.second].reset();
 }
 
 bool MapState::move_projectile(size_t index, Projectile* proj) {
@@ -99,46 +115,27 @@ bool MapState::move_projectile(size_t index, Projectile* proj) {
         int next_col =
             static_cast<int>(cur.second) + static_cast<int>(proj->delta.second);
 
+        position next{static_cast<int8_t>(next_row),
+                      static_cast<int8_t>(next_col)};
         // if the projectile moves out of bounds, remove it
-        if (next_row < 0 || next_row >= ROWS || next_col < 0 ||
-            next_col >= COLUMNS) {
-            {
-                std::scoped_lock lock(state_mutex);
-                map[cur.first][cur.second].reset();
-            }
-            enemies.erase(enemies.begin() + index);
+        if (is_out_of_bounds(next)) {
+            remove_dead(index);
             alive = false;
             break;
         }
 
-        position next{static_cast<int8_t>(next_row),
-                      static_cast<int8_t>(next_col)};
-
-        std::shared_ptr<Entity> target;
-        {
-            std::scoped_lock lock(state_mutex);
-            target = map[next.first][next.second];
-        }
-
         // if projectile hits something, deal damage and remove projectile
-        if (target != nullptr) {
+        if (is_occupied(next)) {
             attack_pos(next, proj->DAMAGE);
-            {
-                std::scoped_lock lock(state_mutex);
-                map[cur.first][cur.second].reset();
-            }
-            enemies.erase(enemies.begin() + index);
+            remove_dead(index);
             alive = false;
             break;
         }
 
         // Empty tile: move the projectile forward.
-        if (move_pos(cur, next)) {
-            proj->set_pos(state_mutex, next);
-        } else {
-            // If it can't move for some reason, remove it.
-            enemies.erase(enemies.begin() + index);
+        if (!move_to_pos(enemies[index].get(), next)) {
             alive = false;
+            remove_dead(index);
             break;
         }
     }
@@ -200,43 +197,42 @@ void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
     }
 }
 
-void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
+bool MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
     if (radius != 1) {
-        return; // TODO: Add radius calculations
+        return false; // TODO: Add radius calculations
     }
 
     if (is_out_of_bounds(pos)) {
-        return;
+        return false;
     }
 
     std::scoped_lock lock(state_mutex);
     auto& entity = map[pos.first][pos.second];
     if (entity == nullptr) {
-        return;
+        return false;
     }
     auto remaining_hp = entity->take_damage(dmg);
 
-    if (remaining_hp <= 0) {
-        // If the player dies, end the game.
-        if (entity.get() == player.get()) {
-            game_running = false;
-        }
-        entity.reset();
+    // If the player dies, end the game.
+    if (remaining_hp <= 0 && entity.get() == player.get()) {
+        game_running = false;
     }
+
+    return true;
 }
 
 void MapState::move_player(position goal_pos) {
     move_to_pos(player.get(), goal_pos);
 }
 
-void MapState::move_to_pos(Entity* entity, position new_pos) {
+bool MapState::move_to_pos(Entity* entity, position new_pos) {
     position old_pos = entity->get_pos(state_mutex);
 
     {
         std::scoped_lock lock(state_mutex);
 
         if (is_occupied(new_pos)) {
-            return;
+            return false;
         }
 
         std::swap(map[old_pos.first][old_pos.second],
@@ -244,6 +240,8 @@ void MapState::move_to_pos(Entity* entity, position new_pos) {
     }
 
     entity->set_pos(state_mutex, new_pos);
+
+    return true;
 }
 
 void MapState::handle_shot(position shoot_delta) {
@@ -253,13 +251,15 @@ void MapState::handle_shot(position shoot_delta) {
     start.second += shoot_delta.second;
 
     // ignore shots that would start outside the map
-    if (0 > start.first || start.first >= ROWS || 0 > start.second ||
-        start.second >= COLUMNS) {
+    if (is_out_of_bounds(start)) {
         return;
     }
 
     // attack the first tile. if it stays empty, spawn a projectile
-    attack_pos(start, player->DAMAGE);
+    bool hit = attack_pos(start, player->DAMAGE);
+    if (hit) {
+        return;
+    }
 
     std::shared_ptr<Entity> cell_after;
     {
@@ -297,9 +297,11 @@ void MapState::ncurses_thread() {
             break;
 
         if (did_shoot) {
+            logfile << "nc Shooting\n";
             handle_shot(shoot_delta);
         }
 
+        logfile << "nc Moving Player\n";
         move_player(new_pos);
         // Render the frame. We acquire the lock to make sure that we always
         // render the true state of the game, even if something else is being

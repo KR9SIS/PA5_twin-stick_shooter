@@ -28,8 +28,16 @@
 int main() {
     const int FRAMES_PER_SECOND = 120;
     NcursesScreen screen(FRAMES_PER_SECOND);
-    MapState map_state(30, 30, 1, screen);
-    map_state.run_level();
+    uint16_t difficulty = 20;
+    uint16_t rows = 30;
+    uint16_t columns = 60;
+    for (uint8_t lvl = 0; lvl < 3; lvl++) {
+        MapState map_state(rows, columns, difficulty, screen);
+        map_state.run_level();
+        difficulty *= 2;
+        rows /= 2;
+        columns /= 2;
+    }
 
     return 0;
 }

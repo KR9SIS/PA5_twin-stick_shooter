@@ -347,7 +347,8 @@ void MapState::create_render_state(
     // the shared state of the game.
     std::scoped_lock lock(state_mutex);
 
-    player_render_data = {.pos = player->cur_pos, .icon = player->ICON};
+    player_render_data = {
+        .pos = player->cur_pos, .icon = player->ICON, .health = player->cur_hp};
 
     // Update the enemies' render data.
     enemies_render_data.clear();

@@ -21,6 +21,7 @@ struct BulletRenderData {
 struct EntityRenderData {
     position pos{};
     char icon = '?';
+    int8_t health{};
 };
 // ↑Temporary, just for testing↑.
 

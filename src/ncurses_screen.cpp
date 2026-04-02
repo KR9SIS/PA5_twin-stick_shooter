@@ -154,7 +154,8 @@ void NcursesScreen::render_frame(
     // Print the state of the movement and firing keys.
     ::ncplane_printf_yx(
         stdplane, 2, 0,
-        "Move:W[%c] A[%c] S[%c] D[%c] | Fire:^[%c] <[%c] v[%c] >[%c]",
+        "Move:W[%c] A[%c] S[%c] D[%c] | Fire:^[%c] <[%c] v[%c] >[%c] | Health: "
+        "%d",
         held_symbol(input_state.move_key_held[to_dir_index(InputDir::Up)]),
         held_symbol(input_state.move_key_held[to_dir_index(InputDir::Left)]),
         held_symbol(input_state.move_key_held[to_dir_index(InputDir::Down)]),
@@ -162,7 +163,8 @@ void NcursesScreen::render_frame(
         held_symbol(input_state.fire_key_held[to_dir_index(InputDir::Up)]),
         held_symbol(input_state.fire_key_held[to_dir_index(InputDir::Left)]),
         held_symbol(input_state.fire_key_held[to_dir_index(InputDir::Down)]),
-        held_symbol(input_state.fire_key_held[to_dir_index(InputDir::Right)]));
+        held_symbol(input_state.fire_key_held[to_dir_index(InputDir::Right)]),
+        player.health);
 
     // Set up our battle plane.
     setup_battle_plane(rows, columns);

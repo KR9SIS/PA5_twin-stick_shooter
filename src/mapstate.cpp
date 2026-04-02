@@ -6,6 +6,7 @@
 #include <mutex>
 #include <thread>
 #include <utility>
+#include <vector>
 
 namespace {
 // Check if the given input_dir is active in the input state. If firing is
@@ -27,8 +28,9 @@ bool is_dir_active(const InputState& input_state, InputDir input_dir,
 
 MapState::MapState(size_t r, size_t c, uint8_t difficulty,
                    NcursesScreen& screen)
-    : ROWS(r), COLUMNS(c), DIFFICULTY(difficulty), SCREEN(screen),
-      game_running(true) {
+    : ROWS(r), COLUMNS(c), DIFFICULTY(difficulty), MAX_ENEMIES(DIFFICULTY / 4),
+      SCREEN(screen), game_running(true) {
+
     map.resize(r);
     for (auto& row : map) {
         row.resize(c);
@@ -42,10 +44,12 @@ MapState::MapState(size_t r, size_t c, uint8_t difficulty,
     map[player->get_pos(state_mutex).first]
        [player->get_pos(state_mutex).second] = player;
 
-    for (int i = 0; i < difficulty * 5; i++) {
-        enemies.push_back(std::make_shared<Goblin>(i, i));
-        map[i][i] = enemies.back();
-    }
+    killed = 0;
+    spawned = 0;
+    directions.push_back(position(0, COLUMNS / 2));        // top mid
+    directions.push_back(position(ROWS - 1, COLUMNS / 2)); // bottom mid
+    directions.push_back(position(ROWS / 2, 0));           // mid left
+    directions.push_back(position(ROWS / 2, COLUMNS - 1)); // mid right
 
     ncurses_worker = std::thread(&MapState::ncurses_thread, this);
 }
@@ -57,6 +61,7 @@ MapState::~MapState() {
         ncurses_worker.join();
     }
 }
+
 void MapState::remove_enemy(std::size_t i, std::shared_ptr<Enemy> enemy) {
     std::scoped_lock lock(state_mutex);
     enemies[i] = std::move(enemies[enemies.size() - 1]);
@@ -65,15 +70,34 @@ void MapState::remove_enemy(std::size_t i, std::shared_ptr<Enemy> enemy) {
     map[enemy->cur_pos.first][enemy->cur_pos.second].reset();
 }
 
+bool MapState::add_enemy(std::shared_ptr<Enemy> enemy) {
+    std::scoped_lock lock(state_mutex);
+    if (is_occupied(enemy->cur_pos)) {
+        return false;
+    }
+    enemies.push_back(enemy);
+
+    map[enemy->cur_pos.first][enemy->cur_pos.second] = enemy;
+    return true;
+}
+
 void MapState::run_level() {
+    uint8_t direction = 0;
+
     // Load the current state of the game_running atomic_bool.
-    while (game_running.load()) {
+    while (game_running.load() && killed < DIFFICULTY) {
+        direction = (direction + 1) % directions.size();
+        if (enemies.size() < MAX_ENEMIES && spawned < DIFFICULTY) {
+            add_enemy(std::make_shared<Goblin>(directions[direction]));
+            spawned++;
+        }
         std::size_t i = 0;
         while (i < enemies.size()) {
             auto enemy = enemies[i];
             if (enemy->cur_hp <= 0) {
                 // Remove dead enemies
                 remove_enemy(i, enemy);
+                killed++;
                 continue;
             }
 
@@ -90,9 +114,9 @@ void MapState::run_level() {
             }
             i++;
         }
-        if (enemies.size() == 0) {
-            game_running = false;
-        }
+        // if (enemies.size() == 0) {
+        //     game_running = false;
+        // }
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }

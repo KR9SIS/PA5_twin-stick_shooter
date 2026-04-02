@@ -15,12 +15,16 @@ class MapState {
   public:
     std::vector<std::shared_ptr<Enemy>> enemies;
     std::shared_ptr<Player> player;
-    const int8_t ROWS;
-    const int8_t COLUMNS;
+    const int16_t ROWS;
+    const int16_t COLUMNS;
     const uint8_t DIFFICULTY;
+    const uint8_t MAX_ENEMIES;
+
     NcursesScreen& SCREEN;
     std::vector<std::vector<std::shared_ptr<Entity>>> map;
-    int difficulty;
+    uint8_t killed;
+    uint8_t spawned;
+    std::vector<position> directions;
 
     MapState(size_t rows, size_t columns, uint8_t difficulty,
              NcursesScreen& screen);
@@ -68,4 +72,5 @@ class MapState {
         last_bullet_fire_time_{};
 
     void remove_enemy(std::size_t i, std::shared_ptr<Enemy> enemy);
+    bool add_enemy(std::shared_ptr<Enemy> enemy);
 };

@@ -63,8 +63,8 @@ class Goblin : public Enemy {
     void attack() {
         void melee_attack();
     }
-    Goblin(uint8_t start_y, uint8_t start_x)
-        : Enemy(5, 1, 3, 'g', start_y, start_x) {}
+    Goblin(position start_pos)
+        : Enemy(5, 1, 3, 'g', start_pos.first, start_pos.second) {}
 };
 
 class Wizard : public Enemy {

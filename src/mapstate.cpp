@@ -81,7 +81,7 @@ bool MapState::add_enemy(std::shared_ptr<Enemy> enemy) {
     return true;
 }
 
-void MapState::run_level() {
+bool MapState::run_level() {
     uint8_t direction = 0;
 
     // Load the current state of the game_running atomic_bool.
@@ -114,11 +114,12 @@ void MapState::run_level() {
             }
             i++;
         }
-        // if (enemies.size() == 0) {
-        //     game_running = false;
-        // }
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
+    if (killed == DIFFICULTY) {
+        return true;
+    }
+    return false;
 }
 
 // Check if the position is out of bounds. No lock is needed for this, since

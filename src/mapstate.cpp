@@ -161,7 +161,7 @@ void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
         auto dir = std::make_pair(goal_pos.first - cur_pos.first,
                                   goal_pos.second - cur_pos.second);
         if (dir.first && dir.second) {
-            if (rand() % 2) {
+            if (::rand() % 2) {
                 move(dir.first, true);
             } else {
                 move(dir.second, false);
@@ -260,9 +260,7 @@ void MapState::spawn_test_bullets(const InputState& input_state,
                                   std::chrono::steady_clock::time_point now) {
     const position player_pos = player->get_pos(state_mutex);
 
-    // Create bullets for each held direction key (for input key testing).
-    // TODO: Change this so that bullets can only be fired from one direction.
-    // TODO: Add diagonal shooting?
+    // Create bullets for each held direction key.
     for (InputDir input_dir :
          {InputDir::Up, InputDir::Down, InputDir::Left, InputDir::Right}) {
         if (!is_dir_active(input_state, input_dir, true)) {

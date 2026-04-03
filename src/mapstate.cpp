@@ -305,7 +305,7 @@ void MapState::move_test_bullets_forward(
     // TODO: There's gotta be a more elegant solution to this...
     auto next_end = std::remove_if(
         test_bullets.begin(), test_bullets.end(),
-        [this, now](TestBullet& bullet) {
+        [this, now](BulletState& bullet) {
             // Only move the bullet if enough time has passed.
             if (now - bullet.last_moved_at < BULLET_STEP_INTERVAL) {
                 return false; // Don't remove the bullet.
@@ -325,7 +325,6 @@ void MapState::move_test_bullets_forward(
                 auto& target_entity = map[next_pos.first][next_pos.second];
                 target_entity->take_damage(player->DAMAGE);
                 return true; // Remove the bullet.
-
             }
 
             bullet.pos = next_pos;
@@ -334,35 +333,6 @@ void MapState::move_test_bullets_forward(
 
     // Erase the bullets that need to be removed.
     test_bullets.erase(next_end, test_bullets.end());
-}
-
-// Creates the current rendering “state” or “snapshot” of the game, basically
-// the data that render_frame() needs to render the current state of the game.
-void MapState::create_render_state(
-    EntityRenderData& player_render_data,
-    std::vector<EntityRenderData>& enemies_render_data,
-    std::vector<BulletRenderData>& bullets_render_data) const {
-    // Create a lock for the duration of this function, since we're accessing
-    // the shared state of the game.
-    std::scoped_lock lock(state_mutex);
-
-    player_render_data = {
-        .pos = player->cur_pos, .icon = player->ICON, .health = player->cur_hp};
-
-    // Update the enemies' render data.
-    enemies_render_data.clear();
-    enemies_render_data.reserve(enemies.size());
-    for (const auto& enemy : enemies) {
-        enemies_render_data.push_back(
-            {.pos = enemy->cur_pos, .icon = enemy->ICON});
-    }
-
-    // Update the bullets' render data.
-    bullets_render_data.clear();
-    bullets_render_data.reserve(test_bullets.size());
-    for (const TestBullet& bullet : test_bullets) {
-        bullets_render_data.push_back({.pos = bullet.pos, .icon = bullet.icon});
-    }
 }
 
 position MapState::get_dir_diff(InputDir input_dir) {
@@ -410,17 +380,11 @@ void MapState::ncurses_thread() {
         spawn_test_bullets(input_state, now);
         move_test_bullets_forward(now);
 
-        // Create render data for render_frame().
-        // TODO: Replace the whole “render data” system with just getting the
-        // data from the entities directly.
-        EntityRenderData player_render;
-        std::vector<EntityRenderData> enemies_render_data;
-        std::vector<BulletRenderData> bullets_render_data;
-        create_render_state(player_render, enemies_render_data,
-                            bullets_render_data);
-
-        SCREEN.render_frame(player_render, enemies_render_data,
-                            bullets_render_data, ROWS, COLUMNS, input_state);
+        {
+            std::scoped_lock lock(state_mutex);
+            SCREEN.render_frame(*player, enemies, test_bullets, ROWS, COLUMNS,
+                                input_state);
+        }
         SCREEN.sleep_until_next_frame();
     }
 }

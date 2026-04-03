@@ -134,10 +134,9 @@ InputState NcursesScreen::consume_input_state() {
 }
 
 void NcursesScreen::render_frame(
-    EntityRenderData player,
-    const std::vector<EntityRenderData>& enemies_render_data,
-    const std::vector<BulletRenderData>& bullets_render_data, int8_t rows,
-    int8_t columns, const InputState& input_state) {
+    const Player& player, const std::vector<std::shared_ptr<Enemy>>& enemies,
+    const std::vector<BulletState>& bullets, int8_t rows, int8_t columns,
+    const InputState& input_state) {
     // Create the standard plane, i.e. the entire terminal window.
     ncplane* const stdplane = ::notcurses_stdplane(notcurses_);
     ::ncplane_erase(stdplane);
@@ -164,7 +163,7 @@ void NcursesScreen::render_frame(
         held_symbol(input_state.fire_key_held[to_dir_index(InputDir::Left)]),
         held_symbol(input_state.fire_key_held[to_dir_index(InputDir::Down)]),
         held_symbol(input_state.fire_key_held[to_dir_index(InputDir::Right)]),
-        player.health);
+        player.cur_hp);
 
     // Set up our battle plane.
     setup_battle_plane(rows, columns);
@@ -176,19 +175,19 @@ void NcursesScreen::render_frame(
 
     // Draw the player.
     update_plane_rgb(battle_plane_, PLAYER_RGB_R, PLAYER_RGB_G, PLAYER_RGB_B);
-    ::ncplane_putchar_yx(battle_plane_, player.pos.first + 1,
-                         player.pos.second + 1, player.icon);
+    ::ncplane_putchar_yx(battle_plane_, player.cur_pos.first + 1,
+                         player.cur_pos.second + 1, player.ICON);
 
     // Draw the enemies.
     update_plane_rgb(battle_plane_, ENEMY_RGB_R, ENEMY_RGB_G, ENEMY_RGB_B);
-    for (const EntityRenderData& enemy : enemies_render_data) {
-        ::ncplane_putchar_yx(battle_plane_, enemy.pos.first + 1,
-                             enemy.pos.second + 1, enemy.icon);
+    for (const std::shared_ptr<Enemy>& enemy : enemies) {
+        ::ncplane_putchar_yx(battle_plane_, enemy->cur_pos.first + 1,
+                             enemy->cur_pos.second + 1, enemy->ICON);
     }
 
     // Draw the bullets.
     update_plane_rgb(battle_plane_, BULLET_RGB_R, BULLET_RGB_G, BULLET_RGB_B);
-    for (const BulletRenderData& bullet : bullets_render_data) {
+    for (const BulletState& bullet : bullets) {
         ::ncplane_putchar_yx(battle_plane_, bullet.pos.first + 1,
                              bullet.pos.second + 1, bullet.icon);
     }

@@ -2,7 +2,9 @@
 
 #include "entities.h"
 #include <array>
+#include <chrono>
 #include <cstdint>
+#include <memory>
 #include <notcurses/notcurses.h>
 #include <vector>
 
@@ -10,20 +12,12 @@
 enum class InputDir : uint8_t { Up = 0, Down, Left, Right };
 constexpr uint8_t INPUT_DIRECTIONS_COUNT = 4;
 
-// TODO: Replace the whole “render data” system with just getting the data from
-// the entities directly.
-// ↓Temporary, just for testing↓.
-struct BulletRenderData {
+struct BulletState {
     position pos{};
+    position pos_diff{};
     char icon = '*';
+    std::chrono::steady_clock::time_point last_moved_at{};
 };
-
-struct EntityRenderData {
-    position pos{};
-    char icon = '?';
-    int8_t health{};
-};
-// ↑Temporary, just for testing↑.
 
 struct InputState {
     bool quit_requested = false;
@@ -41,11 +35,10 @@ class NcursesScreen final {
     NcursesScreen& operator=(const NcursesScreen&) = delete;
 
     InputState consume_input_state();
-    void render_frame(EntityRenderData player,
-                      const std::vector<EntityRenderData>& enemies_render_data,
-                      const std::vector<BulletRenderData>& bullets_render_data,
-                      int8_t rows, int8_t columns,
-                      const InputState& input_state);
+    void render_frame(const Player& player,
+                      const std::vector<std::shared_ptr<Enemy>>& enemies,
+                      const std::vector<BulletState>& bullets, int8_t rows,
+                      int8_t columns, const InputState& input_state);
     void sleep_until_next_frame() const;
 
   private:

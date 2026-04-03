@@ -38,14 +38,6 @@ class MapState {
     void ncurses_thread();
 
   private:
-    // TODO: Make TestBullet a proper Entity.
-    struct TestBullet {
-        position pos{};
-        position pos_diff{};
-        char icon = '*';
-        std::chrono::steady_clock::time_point last_moved_at{};
-    };
-
     static constexpr auto PLAYER_MOVE_INTERVAL = std::chrono::milliseconds(70);
     static constexpr auto BULLET_FIRE_INTERVAL = std::chrono::milliseconds(120);
     static constexpr auto BULLET_STEP_INTERVAL = std::chrono::milliseconds(45);
@@ -57,16 +49,13 @@ class MapState {
     void spawn_test_bullets(const InputState& input_state,
                             std::chrono::steady_clock::time_point now);
     void move_test_bullets_forward(std::chrono::steady_clock::time_point now);
-    void create_render_state(EntityRenderData& player,
-                             std::vector<EntityRenderData>& enemies_render_data,
-                             std::vector<BulletRenderData>& bullets) const;
     static position get_dir_diff(InputDir direction);
     static char get_bullet_icon(InputDir direction);
 
     mutable std::mutex state_mutex;
     std::thread ncurses_worker;
     std::atomic_bool game_running;
-    std::vector<TestBullet> test_bullets;
+    std::vector<BulletState> test_bullets;
     std::chrono::steady_clock::time_point last_player_move_time_{};
     std::array<std::chrono::steady_clock::time_point, ::INPUT_DIRECTIONS_COUNT>
         last_bullet_fire_time_{};

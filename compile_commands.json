@@ -6,17 +6,42 @@
       "-Iinclude",
       "-MMD",
       "-MP",
+      "-D_DEFAULT_SOURCE",
+      "-D_XOPEN_SOURCE=600",
       "-Wall",
       "-Werror",
       "-Wpedantic",
+      "-std=c++20",
       "-O2",
       "-c",
       "src/main.cpp",
       "-o",
       "obj/src/main.o"
     ],
-    "directory": "/home/ghrafn/my_cpp_code/PA5_twin-stick_shooter",
+    "directory": "/home/andromedy/Documents/PA5_twin-stick_shooter",
     "output": "obj/src/main.o"
+  },
+  {
+    "file": "src/ncurses_screen.cpp",
+    "arguments": [
+      "g++",
+      "-Iinclude",
+      "-MMD",
+      "-MP",
+      "-D_DEFAULT_SOURCE",
+      "-D_XOPEN_SOURCE=600",
+      "-Wall",
+      "-Werror",
+      "-Wpedantic",
+      "-std=c++20",
+      "-O2",
+      "-c",
+      "src/ncurses_screen.cpp",
+      "-o",
+      "obj/src/ncurses_screen.o"
+    ],
+    "directory": "/home/andromedy/Documents/PA5_twin-stick_shooter",
+    "output": "obj/src/ncurses_screen.o"
   },
   {
     "file": "src/entity.cpp",
@@ -25,16 +50,19 @@
       "-Iinclude",
       "-MMD",
       "-MP",
+      "-D_DEFAULT_SOURCE",
+      "-D_XOPEN_SOURCE=600",
       "-Wall",
       "-Werror",
       "-Wpedantic",
+      "-std=c++20",
       "-O2",
       "-c",
       "src/entity.cpp",
       "-o",
       "obj/src/entity.o"
     ],
-    "directory": "/home/ghrafn/my_cpp_code/PA5_twin-stick_shooter",
+    "directory": "/home/andromedy/Documents/PA5_twin-stick_shooter",
     "output": "obj/src/entity.o"
   },
   {
@@ -44,16 +72,19 @@
       "-Iinclude",
       "-MMD",
       "-MP",
+      "-D_DEFAULT_SOURCE",
+      "-D_XOPEN_SOURCE=600",
       "-Wall",
       "-Werror",
       "-Wpedantic",
+      "-std=c++20",
       "-O2",
       "-c",
       "src/enemy.cpp",
       "-o",
       "obj/src/enemy.o"
     ],
-    "directory": "/home/ghrafn/my_cpp_code/PA5_twin-stick_shooter",
+    "directory": "/home/andromedy/Documents/PA5_twin-stick_shooter",
     "output": "obj/src/enemy.o"
   },
   {
@@ -63,16 +94,19 @@
       "-Iinclude",
       "-MMD",
       "-MP",
+      "-D_DEFAULT_SOURCE",
+      "-D_XOPEN_SOURCE=600",
       "-Wall",
       "-Werror",
       "-Wpedantic",
+      "-std=c++20",
       "-O2",
       "-c",
       "src/player.cpp",
       "-o",
       "obj/src/player.o"
     ],
-    "directory": "/home/ghrafn/my_cpp_code/PA5_twin-stick_shooter",
+    "directory": "/home/andromedy/Documents/PA5_twin-stick_shooter",
     "output": "obj/src/player.o"
   },
   {
@@ -82,16 +116,19 @@
       "-Iinclude",
       "-MMD",
       "-MP",
+      "-D_DEFAULT_SOURCE",
+      "-D_XOPEN_SOURCE=600",
       "-Wall",
       "-Werror",
       "-Wpedantic",
+      "-std=c++20",
       "-O2",
       "-c",
       "src/mapstate.cpp",
       "-o",
       "obj/src/mapstate.o"
     ],
-    "directory": "/home/ghrafn/my_cpp_code/PA5_twin-stick_shooter",
+    "directory": "/home/andromedy/Documents/PA5_twin-stick_shooter",
     "output": "obj/src/mapstate.o"
   }
 ]

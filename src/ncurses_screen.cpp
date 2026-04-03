@@ -106,6 +106,11 @@ NcursesScreen::~NcursesScreen() {
     }
 }
 
+/**
+ * @brief Consume all pending input events and update the input state
+ * accordingly.
+ * @return The current input state after consuming all pending input events.
+ */
 InputState NcursesScreen::consume_input_state() {
     // If the Kitty keyboard protocol isn't active, we can assume that no keys
     // are currently held, since without the protocol we only get events on key
@@ -133,6 +138,18 @@ InputState NcursesScreen::consume_input_state() {
     return input_state_;
 }
 
+/**
+ * @brief Render a frame of the game by drawing the player, enemies, and
+ * bullets on the battle plane, and then rendering the Notcurses context.
+ * @param player The player to render.
+ * @param enemies The enemies to render.
+ * @param bullets The bullets to render.
+ * @param rows The number of rows in the battle plane (used for drawing the
+ * border).
+ * @param columns The number of columns in the battle plane (used for drawing
+ * the border).
+ * @param input_state The current input state.
+ */
 void NcursesScreen::render_frame(
     const Player& player, const std::vector<std::shared_ptr<Enemy>>& enemies,
     const std::vector<BulletState>& bullets, int8_t rows, int8_t columns,
@@ -195,11 +212,21 @@ void NcursesScreen::render_frame(
     (void)::notcurses_render(notcurses_); // Render everything.
 }
 
+/**
+ * @brief Sleep until it's time to render the next frame, based on the refresh
+ * interval.
+ */
 void NcursesScreen::sleep_until_next_frame() const {
     std::this_thread::sleep_for(
         std::chrono::milliseconds(refresh_interval_ms_));
 }
 
+/**
+ * @brief Set up the battle plane by creating it if it doesn't exist, or
+ * resizing it if it does exist but is the wrong size.
+ * @param rows The number of rows in the battle plane.
+ * @param columns The number of columns in the battle plane.
+ */
 void NcursesScreen::setup_battle_plane(int8_t rows, int8_t columns) {
     if (battle_plane_ == nullptr) {
         ncplane_options options{
@@ -239,7 +266,11 @@ void NcursesScreen::setup_battle_plane(int8_t rows, int8_t columns) {
     battle_columns_ = columns;
 }
 
-// Handles a Notcurses input event by updating the corresponding input state.
+/**
+ * @brief Handle an input event by updating the input state accordingly.
+ * @param input_event_id The ID of the input event to handle.
+ * @param input_event The input event data.
+ */
 void NcursesScreen::handle_input_event(uint32_t input_event_id,
                                        const ncinput& input_event) {
     // Ignore resize events.
@@ -293,9 +324,13 @@ void NcursesScreen::handle_input_event(uint32_t input_event_id,
     }
 }
 
-// Updates the input state for the provided key input direction based on
-// whether it's a firing key or movement key, and whether the event is a key
-// press or key release.
+/**
+ * @brief Set the state of the given input direction and key type (movement or
+ * firing) based on the given event type (press or release).
+ * @param input_dir The input direction to update.
+ * @param firing Whether the key is a firing key or not.
+ * @param event_type The type of the input event (press or release).
+ */
 void NcursesScreen::set_direction_state(InputDir input_dir, bool firing,
                                         ncintype_e event_type) {
     const size_t key_dir_index = to_dir_index(input_dir);

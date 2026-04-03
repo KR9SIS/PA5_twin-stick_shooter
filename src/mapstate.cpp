@@ -62,6 +62,11 @@ MapState::~MapState() {
     }
 }
 
+/**
+ * @brief Remove an enemy from the map and the enemies vector.
+ * @param i The index of the enemy to remove in the enemies vector.
+ * @param enemy A shared pointer to the enemy to remove.
+ */
 void MapState::remove_enemy(std::size_t i, std::shared_ptr<Enemy> enemy) {
     std::scoped_lock lock(state_mutex);
     enemies[i] = std::move(enemies[enemies.size() - 1]);
@@ -70,6 +75,12 @@ void MapState::remove_enemy(std::size_t i, std::shared_ptr<Enemy> enemy) {
     map[enemy->cur_pos.first][enemy->cur_pos.second].reset();
 }
 
+/**
+ * @brief Add an enemy to the map and the enemies vector.
+ * @param enemy A shared pointer to the enemy to add.
+ * @return True if the enemy was added successfully, false if the enemy's
+ * position is occupied or out of bounds.
+ */
 bool MapState::add_enemy(std::shared_ptr<Enemy> enemy) {
     std::scoped_lock lock(state_mutex);
     if (is_occupied(enemy->cur_pos)) {
@@ -81,6 +92,13 @@ bool MapState::add_enemy(std::shared_ptr<Enemy> enemy) {
     return true;
 }
 
+/**
+ * @brief Run the main game loop for the level, 
+ *
+ * Continues until the player dies or the required number of enemies are
+ * killed.
+ * @return True if the level is completed successfully, false otherwise.
+ */
 bool MapState::run_level() {
     uint8_t direction = 0;
 
@@ -122,15 +140,22 @@ bool MapState::run_level() {
     return false;
 }
 
-// Check if the position is out of bounds. No lock is needed for this, since
-// the bounds of the map never change.
+/**
+ * @brief Check if the given position is out of bounds.
+ * @param pos The position to check.
+ * @return True if the position is out of bounds, false otherwise.
+ */
 bool MapState::is_out_of_bounds(position pos) const {
     return (pos.first < 0) || (pos.first >= ROWS) || (pos.second < 0) ||
            (pos.second >= COLUMNS);
 }
 
-// Check if the position is occupied. Every time we call this, we assume we're
-// already holding the lock.
+/**
+ * @brief Check if the given position is occupied by an entity.
+ * @param pos The position to check.
+ * @return True if the position is occupied, false if it's empty or out of
+ * bounds.
+ */
 bool MapState::is_occupied(position pos) const {
     if (is_out_of_bounds(pos)) {
         return true;
@@ -139,7 +164,14 @@ bool MapState::is_occupied(position pos) const {
     return map[pos.first][pos.second] != nullptr;
 }
 
-void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
+/**
+ * @brief Move the given enemy towards the goal position, up to the enemy's
+ * move speed.
+ * @param goal_pos The position to move towards.
+ * @param enemy The enemy to move.
+ */
+void MapState::move_enemy(position goal_pos,
+                          const std::shared_ptr<Enemy>& enemy) {
     auto move = [this, &enemy](int8_t dir, bool is_row) {
         // get new position
         // check if new position is occupied
@@ -176,6 +208,13 @@ void MapState::move_enemy(position goal_pos, std::shared_ptr<Enemy>& enemy) {
     }
 }
 
+/**
+ * @brief Attack the given position with the given damage and radius.
+ * @param pos The position to attack.
+ * @param dmg The damage to deal to any entity at the position.
+ * @param radius The radius around the position to also deal damage to (not
+ * implemented yet).
+ */
 void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
     if (radius != 1) {
         return; // TODO: Add radius calculations
@@ -198,10 +237,20 @@ void MapState::attack_pos(position pos, uint8_t dmg, uint8_t radius) {
     }
 }
 
+/**
+ * @brief Move the player towards the goal position.
+ * @param goal_pos The position to move towards.
+ */
 void MapState::move_player(position goal_pos) {
     move_to_pos(player.get(), goal_pos);
 }
 
+/**
+ * @brief Move the given entity to the new position, if it's not occupied and
+ * not out of bounds.
+ * @param entity The entity to move.
+ * @param new_pos The position to move to.
+ */
 void MapState::move_to_pos(Entity* entity, position new_pos) {
     position old_pos = entity->get_pos(state_mutex);
 
@@ -219,6 +268,12 @@ void MapState::move_to_pos(Entity* entity, position new_pos) {
     entity->set_pos(state_mutex, new_pos);
 }
 
+/**
+ * @brief Update the player's position based on the input state.
+ * @param input_state The current input state to update from.
+ * @param now The current time (used to check if enough time has passed since
+ * the player's last move).
+ */
 void MapState::update_player_from_input(
     const InputState& input_state, std::chrono::steady_clock::time_point now) {
     // Player can only move at certain intervals.
@@ -256,8 +311,14 @@ void MapState::update_player_from_input(
                  static_cast<int8_t>(cur_pos.second + pos_diff.second)});
 }
 
+/**
+ * @brief Spawn bullets in the directions of the held firing keys.
+ * @param input_state The current input state to check for held firing keys.
+ * @param now The current time (used to check if enough time has passed since
+ * the last bullet was fired in each direction).
+ */
 void MapState::spawn_bullets(const InputState& input_state,
-                                  std::chrono::steady_clock::time_point now) {
+                             std::chrono::steady_clock::time_point now) {
     const position player_pos = player->get_pos(state_mutex);
 
     // Create bullets for each held direction key.
@@ -294,10 +355,15 @@ void MapState::spawn_bullets(const InputState& input_state,
     }
 }
 
-// Moves all test bullets forward if enough time has passed since they last
-// moved.
-void MapState::move_bullets_forward(
-    std::chrono::steady_clock::time_point now) {
+/**
+ * @brief Move the bullets forward in their respective directions, removing
+ * them if they hit something.
+ *
+ * If a bullet hits an enemy, it deals damage to the enemy, and is remove.
+ * @param now The current time (used to check if enough time has passed since
+ * each bullet's last move).
+ */
+void MapState::move_bullets_forward(std::chrono::steady_clock::time_point now) {
     std::scoped_lock lock(state_mutex);
 
     // TODO: There's gotta be a more elegant solution to this...
@@ -320,7 +386,8 @@ void MapState::move_bullets_forward(
                 return true; // Remove the bullet.
             }
             if (is_occupied(next_pos)) {
-                const auto& target_entity = map[next_pos.first][next_pos.second];
+                const auto& target_entity =
+                    map[next_pos.first][next_pos.second];
                 target_entity->take_damage(player->DAMAGE);
                 return true; // Remove the bullet.
             }
@@ -333,6 +400,12 @@ void MapState::move_bullets_forward(
     test_bullets.erase(next_end, test_bullets.end());
 }
 
+/**
+ * @brief Get the position difference for a given input direction, used for
+ * moving the player and spawning/moving bullets.
+ * @param input_dir The input direction to get the position difference for.
+ * @return The position difference corresponding to the input direction.
+ */
 position MapState::get_dir_diff(InputDir input_dir) {
     switch (input_dir) {
     case InputDir::Up:
@@ -348,6 +421,11 @@ position MapState::get_dir_diff(InputDir input_dir) {
     return {0, 0};
 }
 
+/**
+ * @brief Get the icon for a bullet fired in a given direction.
+ * @param input_dir The input direction to get the bullet icon for.
+ * @return The icon corresponding to the input direction.
+ */
 char MapState::get_bullet_icon(InputDir input_dir) {
     switch (input_dir) {
     case InputDir::Up:
@@ -363,6 +441,11 @@ char MapState::get_bullet_icon(InputDir input_dir) {
     return '*';
 }
 
+/**
+ * @brief The main loop for the ncurses thread, which repeatedly "consumes"
+ * input state, updates the game state, and renders frames until the game is no
+ * longer running.
+ */
 void MapState::ncurses_thread() {
     while (game_running.load()) {
         const InputState input_state = SCREEN.consume_input_state();

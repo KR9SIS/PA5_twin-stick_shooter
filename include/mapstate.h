@@ -46,9 +46,9 @@ class MapState {
     bool is_occupied(position pos) const;
     void update_player_from_input(const InputState& input_state,
                                   std::chrono::steady_clock::time_point now);
-    void spawn_test_bullets(const InputState& input_state,
+    void spawn_bullets(const InputState& input_state,
                             std::chrono::steady_clock::time_point now);
-    void move_test_bullets_forward(std::chrono::steady_clock::time_point now);
+    void move_bullets_forward(std::chrono::steady_clock::time_point now);
     static position get_dir_diff(InputDir direction);
     static char get_bullet_icon(InputDir direction);
 

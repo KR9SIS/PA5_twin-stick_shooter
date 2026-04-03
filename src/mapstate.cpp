@@ -256,7 +256,7 @@ void MapState::update_player_from_input(
                  static_cast<int8_t>(cur_pos.second + pos_diff.second)});
 }
 
-void MapState::spawn_test_bullets(const InputState& input_state,
+void MapState::spawn_bullets(const InputState& input_state,
                                   std::chrono::steady_clock::time_point now) {
     const position player_pos = player->get_pos(state_mutex);
 
@@ -296,7 +296,7 @@ void MapState::spawn_test_bullets(const InputState& input_state,
 
 // Moves all test bullets forward if enough time has passed since they last
 // moved.
-void MapState::move_test_bullets_forward(
+void MapState::move_bullets_forward(
     std::chrono::steady_clock::time_point now) {
     std::scoped_lock lock(state_mutex);
 
@@ -320,7 +320,7 @@ void MapState::move_test_bullets_forward(
                 return true; // Remove the bullet.
             }
             if (is_occupied(next_pos)) {
-                auto& target_entity = map[next_pos.first][next_pos.second];
+                const auto& target_entity = map[next_pos.first][next_pos.second];
                 target_entity->take_damage(player->DAMAGE);
                 return true; // Remove the bullet.
             }
@@ -375,8 +375,8 @@ void MapState::ncurses_thread() {
         // used for the upcoming methods.
         const auto now = std::chrono::steady_clock::now();
         update_player_from_input(input_state, now);
-        spawn_test_bullets(input_state, now);
-        move_test_bullets_forward(now);
+        spawn_bullets(input_state, now);
+        move_bullets_forward(now);
 
         {
             std::scoped_lock lock(state_mutex);

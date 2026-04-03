@@ -322,11 +322,10 @@ void MapState::move_test_bullets_forward(
                 return true; // Remove the bullet.
             }
             if (is_occupied(next_pos)) {
-                auto& entity = map[next_pos.first][next_pos.second];
-                if (entity == nullptr) {
-                    return true;
-                }
-                entity->take_damage(player->DAMAGE);
+                auto& target_entity = map[next_pos.first][next_pos.second];
+                target_entity->take_damage(player->DAMAGE);
+                return true; // Remove the bullet.
+
             }
 
             bullet.pos = next_pos;
